@@ -10,10 +10,7 @@ import '../controllers/invoices_controller.dart';
 import '../models/invoice.dart';
 
 class InvoiceFormScreen extends StatefulWidget {
-  const InvoiceFormScreen({
-    super.key,
-    this.invoice,
-  });
+  const InvoiceFormScreen({super.key, this.invoice});
 
   final Invoice? invoice;
 
@@ -23,7 +20,8 @@ class InvoiceFormScreen extends StatefulWidget {
 
 class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _invoiceNumberController = TextEditingController();
+  final TextEditingController _invoiceNumberController =
+      TextEditingController();
   final TextEditingController _clientNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -31,7 +29,7 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
   String _status = 'PENDING';
   DateTime _issueDate = DateTime.now();
   DateTime? _dueDate;
-  String _currency = 'EUR';
+  String _currency = 'TND';
 
   bool get isEditing => widget.invoice != null;
 
@@ -46,7 +44,7 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
       _status = widget.invoice!.status;
       _issueDate = widget.invoice!.issueDate;
       _dueDate = widget.invoice!.dueDate;
-      _currency = widget.invoice!.currency ?? 'EUR';
+      _currency = widget.invoice!.currency ?? 'TND';
     }
   }
 
@@ -192,7 +190,9 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                 label: 'Nom du client',
                                 controller: _clientNameController,
                                 hint: 'Entreprise ABC',
-                                prefixIcon: const Icon(Icons.person_outline_rounded),
+                                prefixIcon: const Icon(
+                                  Icons.person_outline_rounded,
+                                ),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
                                     return 'Le nom du client est requis';
@@ -204,14 +204,15 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                               EyTextField(
                                 label: 'Montant',
                                 controller: _amountController,
-                                hint: '1500.00',
-                                keyboardType: const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
-                                prefixIcon: const Icon(Icons.euro_rounded),
+                                hint: '1500.000',
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                prefixIcon: const Icon(Icons.payments_rounded),
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d+\.?\d{0,2}'),
+                                    RegExp(r'^\d+\.?\d{0,3}'),
                                   ),
                                 ],
                                 validator: (value) {
@@ -224,6 +225,41 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                   }
                                   return null;
                                 },
+                              ),
+                              const SizedBox(height: 14),
+                              Text(
+                                'Devise',
+                                style: textTheme.labelMedium?.copyWith(
+                                  color: colors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              DropdownButtonFormField<String>(
+                                initialValue: _currency,
+                                decoration: InputDecoration(
+                                  prefixIcon: const Icon(
+                                    Icons.currency_exchange_rounded,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'TND',
+                                    child: Text('TND - Dinar tunisien'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'EUR',
+                                    child: Text('EUR'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'USD',
+                                    child: Text('USD'),
+                                  ),
+                                ],
+                                onChanged: (value) =>
+                                    setState(() => _currency = value ?? 'TND'),
                               ),
                               const SizedBox(height: 14),
                               Text(
@@ -241,25 +277,29 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                     label: 'En attente',
                                     value: 'PENDING',
                                     selected: _status == 'PENDING',
-                                    onTap: () => setState(() => _status = 'PENDING'),
+                                    onTap: () =>
+                                        setState(() => _status = 'PENDING'),
                                   ),
                                   _StatusChip(
                                     label: 'Payée',
                                     value: 'PAID',
                                     selected: _status == 'PAID',
-                                    onTap: () => setState(() => _status = 'PAID'),
+                                    onTap: () =>
+                                        setState(() => _status = 'PAID'),
                                   ),
                                   _StatusChip(
                                     label: 'En retard',
                                     value: 'OVERDUE',
                                     selected: _status == 'OVERDUE',
-                                    onTap: () => setState(() => _status = 'OVERDUE'),
+                                    onTap: () =>
+                                        setState(() => _status = 'OVERDUE'),
                                   ),
                                   _StatusChip(
                                     label: 'Annulée',
                                     value: 'CANCELLED',
                                     selected: _status == 'CANCELLED',
-                                    onTap: () => setState(() => _status = 'CANCELLED'),
+                                    onTap: () =>
+                                        setState(() => _status = 'CANCELLED'),
                                   ),
                                 ],
                               ),
@@ -279,7 +319,9 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(14),
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: colors.inputBorder),
+                                    border: Border.all(
+                                      color: colors.inputBorder,
+                                    ),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Row(
@@ -291,17 +333,21 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Date d\'émission',
-                                              style: textTheme.labelSmall?.copyWith(
-                                                color: colors.textSecondary,
-                                              ),
+                                              style: textTheme.labelSmall
+                                                  ?.copyWith(
+                                                    color: colors.textSecondary,
+                                                  ),
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
-                                              DateFormat('dd/MM/yyyy').format(_issueDate),
+                                              DateFormat(
+                                                'dd/MM/yyyy',
+                                              ).format(_issueDate),
                                               style: textTheme.bodyLarge,
                                             ),
                                           ],
@@ -318,7 +364,9 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(14),
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: colors.inputBorder),
+                                    border: Border.all(
+                                      color: colors.inputBorder,
+                                    ),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Row(
@@ -330,18 +378,22 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Date d\'échéance (optionnel)',
-                                              style: textTheme.labelSmall?.copyWith(
-                                                color: colors.textSecondary,
-                                              ),
+                                              style: textTheme.labelSmall
+                                                  ?.copyWith(
+                                                    color: colors.textSecondary,
+                                                  ),
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
                                               _dueDate != null
-                                                  ? DateFormat('dd/MM/yyyy').format(_dueDate!)
+                                                  ? DateFormat(
+                                                      'dd/MM/yyyy',
+                                                    ).format(_dueDate!)
                                                   : 'Non définie',
                                               style: textTheme.bodyLarge,
                                             ),
@@ -351,7 +403,8 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                       if (_dueDate != null)
                                         IconButton(
                                           icon: const Icon(Icons.clear_rounded),
-                                          onPressed: () => setState(() => _dueDate = null),
+                                          onPressed: () =>
+                                              setState(() => _dueDate = null),
                                         ),
                                     ],
                                   ),
@@ -379,8 +432,12 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                         ),
                         const SizedBox(height: 24),
                         EyPrimaryButton(
-                          label: isEditing ? 'Mettre à jour' : 'Créer la facture',
-                          icon: isEditing ? Icons.check_rounded : Icons.add_rounded,
+                          label: isEditing
+                              ? 'Mettre à jour'
+                              : 'Créer la facture',
+                          icon: isEditing
+                              ? Icons.check_rounded
+                              : Icons.add_rounded,
                           isLoading: controller.isLoading,
                           onPressed: _submit,
                         ),
@@ -422,16 +479,14 @@ class _StatusChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? colors.eySoft : colors.bgGhost,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: selected ? colors.eyLine : colors.border1,
-          ),
+          border: Border.all(color: selected ? colors.eyLine : colors.border1),
         ),
         child: Text(
           label,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: selected ? colors.textPrimary : colors.textSecondary,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              ),
+            color: selected ? colors.textPrimary : colors.textSecondary,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          ),
         ),
       ),
     );

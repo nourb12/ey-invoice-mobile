@@ -95,8 +95,9 @@ class SessionController extends ChangeNotifier {
       _errorMessage = error.message;
       _status = SessionStatus.unauthenticated;
       return false;
-    } catch (_) {
-      _errorMessage = 'Connexion impossible pour le moment.';
+    } catch (error) {
+      _errorMessage =
+          kDebugMode ? 'Erreur inattendue: $error' : 'Une erreur inattendue est survenue.';
       _status = SessionStatus.unauthenticated;
       return false;
     } finally {

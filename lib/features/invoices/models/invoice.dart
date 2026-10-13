@@ -1,5 +1,5 @@
 class Invoice {
-  final int? id;
+  final String? id;
   final String invoiceNumber;
   final String clientName;
   final double amount;
@@ -18,22 +18,78 @@ class Invoice {
     required this.issueDate,
     this.dueDate,
     this.description,
-    this.currency = 'EUR',
+    this.currency = 'TND',
   });
 
   factory Invoice.fromJson(Map<String, dynamic> json) {
+    String? readString(List<String> keys) {
+      for (final key in keys) {
+        final value = json[key];
+        if (value is String && value.isNotEmpty) {
+          return value;
+        }
+      }
+      return null;
+    }
+
+    double readDouble(List<String> keys) {
+      for (final key in keys) {
+        final value = json[key];
+        if (value is num) {
+          return value.toDouble();
+        }
+      }
+      return 0.0;
+    }
+
+    DateTime? readDate(List<String> keys) {
+      for (final key in keys) {
+        final value = json[key];
+        if (value is String && value.isNotEmpty) {
+          return DateTime.tryParse(value);
+        }
+      }
+      return null;
+    }
+
+    String resolveStatus() {
+      final direct = readString(const ['status', 'statut']);
+      if (direct != null && direct.isNotEmpty) {
+        final lowered = direct.toLowerCase();
+        if (lowered.contains('pay')) {
+          return 'PAID';
+        }
+        if (lowered.contains('annul') || lowered.contains('rejet')) {
+          return 'CANCELLED';
+        }
+      }
+
+      final totalTtc = readDouble(const ['totalTtc', 'amount']);
+      final montantPaye = readDouble(const ['montantPaye']);
+      final estEnRetard = json['estEnRetard'] == true;
+
+      if (totalTtc > 0 && montantPaye >= totalTtc) {
+        return 'PAID';
+      }
+      if (estEnRetard) {
+        return 'OVERDUE';
+      }
+      return 'PENDING';
+    }
+
     return Invoice(
-      id: json['id'] as int?,
-      invoiceNumber: json['invoiceNumber'] as String,
-      clientName: json['clientName'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      status: json['status'] as String,
-      issueDate: DateTime.parse(json['issueDate'] as String),
-      dueDate: json['dueDate'] != null
-          ? DateTime.parse(json['dueDate'] as String)
-          : null,
+      id: (json['id'] is String)
+          ? json['id'] as String
+          : (json['id'] is num ? (json['id'] as num).toString() : null),
+      invoiceNumber: readString(const ['invoiceNumber', 'numero', 'reference']) ??
+          '—',
+      clientName: readString(const ['clientName', 'clientNom']) ?? '—',
+      amount: readDouble(const ['amount', 'totalTtc']),
+      status: resolveStatus(),
+      issueDate: readDate(const ['issueDate', 'dateEmission']) ?? DateTime.now(),
+      dueDate: readDate(const ['dueDate', 'dateEcheance']),
       description: json['description'] as String?,
-      currency: json['currency'] as String? ?? 'EUR',
+      currency: readString(const ['currency', 'devise']) ?? 'TND',
     );
   }
 
@@ -52,7 +108,7 @@ class Invoice {
   }
 
   String get formattedAmount {
-    return '${amount.toStringAsFixed(2)} $currency';
+    return '${amount.toStringAsFixed(currency == "TND" ? 3 : 2)} $currency';
   }
 
   String get statusLabel {
@@ -71,7 +127,7 @@ class Invoice {
   }
 
   Invoice copyWith({
-    int? id,
+    String? id,
     String? invoiceNumber,
     String? clientName,
     double? amount,

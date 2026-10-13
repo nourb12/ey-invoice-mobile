@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/network/api_config.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/widgets/ey_components.dart';
+import '../../../core/widgets/language_picker_button.dart';
 import '../../auth/controllers/session_controller.dart';
 import '../controllers/scan_controller.dart';
 import '../models/scan_draft.dart';
@@ -30,9 +30,9 @@ class DashboardScreen extends StatelessWidget {
     final session = context.watch<SessionController>();
     final scanController = context.watch<ScanController>();
     final recentDrafts = scanController.drafts.take(3).toList();
-    final userName = session.user?.fullName.isNotEmpty == true
-        ? session.user!.fullName
-        : 'Utilisateur';
+    final userName = session.user?.prenom.isNotEmpty == true
+      ? session.user!.prenom
+      : 'Utilisateur';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
@@ -47,14 +47,12 @@ class DashboardScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Bonjour, $userName', style: textTheme.titleMedium),
-                    Text(
-                      'Module mobile aligné sur le thème web',
-                      style: textTheme.bodySmall,
-                    ),
+                    Text('Bienvenue $userName', style: textTheme.titleMedium),
                   ],
                 ),
               ),
+              const LanguagePickerButton(),
+              const SizedBox(width: 8),
               EyIconAction(
                 icon: context.isDarkMode
                     ? Icons.light_mode_rounded
@@ -75,15 +73,24 @@ class DashboardScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const EyEyebrow(label: 'Scan OCR gratuit'),
+                const EyEyebrow(label: 'Scannez vos documents'),
                 const SizedBox(height: 16),
-                Text(
-                  'Capture, lis, corrige et conserve tes brouillons de facture sur mobile.',
-                  style: textTheme.headlineMedium,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Gérez vos Documents',
+                      style: textTheme.headlineMedium,
+                    ),
+                    Text(
+                      'Papiers Depuis Votre Mobile',
+                      style: textTheme.headlineMedium,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Authentification branchée sur ton backend .NET, thème sombre et light calqués sur le web, et flux mobile prêt pour la validation manuelle.',
+                  'Capturez vos documents, vérifiez les informations scannées, validez en quelques secondes.',
                   style: textTheme.bodyMedium?.copyWith(
                     color: colors.textSecondary,
                     height: 1.6,
@@ -94,7 +101,7 @@ class DashboardScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: EyPrimaryButton(
-                        label: 'Scanner maintenant',
+                        label: 'Scanner',
                         icon: Icons.document_scanner_outlined,
                         onPressed: onOpenScan,
                       ),
@@ -102,7 +109,7 @@ class DashboardScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: EySecondaryButton(
-                        label: 'Voir l’historique',
+                        label: 'Historique',
                         icon: Icons.history_rounded,
                         onPressed: onOpenHistory,
                       ),
@@ -125,7 +132,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'Validés',
+                  label: 'Validé',
                   value: scanController.validatedCount.toString(),
                   tone: EyStatusTone.ok,
                 ),
@@ -133,48 +140,12 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'À relire',
+                  label: 'À revalider',
                   value: scanController.extractedCount.toString(),
                   tone: EyStatusTone.warn,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          EySurfaceCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const EyStatusChip(
-                      label: 'Backend auth',
-                      tone: EyStatusTone.ok,
-                    ),
-                    const SizedBox(width: 8),
-                    const EyStatusChip(
-                      label: 'Brouillons locaux',
-                      tone: EyStatusTone.info,
-                    ),
-                    const SizedBox(width: 8),
-                    EyStatusChip(
-                      label: context.isDarkMode ? 'Dark' : 'Light',
-                      tone: EyStatusTone.ey,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Text('État du module', style: textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Text(
-                  'Connexion API: ${ApiConfig.baseUrl}\nFlux OCR: gratuit et local\nStockage des scans: mobile pour ce MVP, en attendant un endpoint backend dédié aux brouillons scannés.',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colors.textSecondary,
-                    height: 1.7,
-                  ),
-                ),
-              ],
-            ),
           ),
           const SizedBox(height: 16),
           EySurfaceCard(
@@ -265,15 +236,43 @@ class _StatCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return EySurfaceCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          EyStatusChip(label: label, tone: tone),
-          const SizedBox(height: 12),
+          Container(
+            width: 28,
+            height: 4,
+            decoration: BoxDecoration(
+              color: switch (tone) {
+                EyStatusTone.ok => colors.ok,
+                EyStatusTone.warn => colors.warn,
+                EyStatusTone.info => colors.info,
+                EyStatusTone.error => colors.error,
+                EyStatusTone.ey => colors.ey,
+                EyStatusTone.neutral => colors.textSecondary.withValues(alpha: .45),
+              },
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.labelLarge?.copyWith(
+              color: colors.textSecondary,
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 14),
           Text(
             value,
-            style: textTheme.headlineSmall?.copyWith(color: colors.textPrimary),
+            style: textTheme.headlineSmall?.copyWith(
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ],
       ),

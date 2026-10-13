@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
-	<string>????</string>
+	<string>APPL</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -30,13 +30,13 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>La caméra est utilisée pour scanner les factures depuis l’application mobile.</string>
+	<string>La caméra est utilisée pour scanner les factures depuis l'application mobile.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>La galerie permet d’importer une facture existante pour lecture OCR.</string>
+	<string>La galerie permet d'importer une facture existante pour lecture OCR.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Le module mobile enregistre les images scannées dans le stockage de l’application.</string>
+	<string>Le module mobile enregistre les images scannées dans le stockage de l'application.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Le mode développement local se connecte à l’API EY sur ton réseau local.</string>
+	<string>Le mode développement local se connecte à l'API EY sur ton réseau local.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

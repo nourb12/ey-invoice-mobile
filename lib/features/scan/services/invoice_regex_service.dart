@@ -1,4 +1,6 @@
+import '../models/extracted_field.dart';
 import '../models/scan_draft.dart';
+import '../models/scan_supplier_match.dart';
 
 class InvoiceRegexService {
   ScanDraft parse({required String rawText, required String imagePath}) {
@@ -67,10 +69,83 @@ class InvoiceRegexService {
       taxAmount: taxAmount,
       currency: currency,
     );
+    final fields = <ExtractedField>[
+      ExtractedField(
+        key: 'supplier_name',
+        label: 'Fournisseur',
+        value: supplier,
+        confidence: _confidenceScore(supplier, confidence),
+        requiredField: true,
+        requiresReview: supplier.trim().isEmpty,
+      ),
+      ExtractedField(
+        key: 'invoice_number',
+        label: 'Numéro facture',
+        value: invoiceNumber,
+        confidence: _confidenceScore(invoiceNumber, confidence),
+        requiredField: true,
+        requiresReview: invoiceNumber.trim().isEmpty,
+      ),
+      ExtractedField(
+        key: 'issue_date',
+        label: 'Date émission',
+        value: invoiceDate,
+        confidence: _confidenceScore(invoiceDate, confidence),
+        requiredField: true,
+        requiresReview: invoiceDate.trim().isEmpty,
+      ),
+      ExtractedField(
+        key: 'due_date',
+        label: 'Date échéance',
+        value: dueDate,
+        confidence: _confidenceScore(dueDate, confidence),
+        requiredField: false,
+        requiresReview: false,
+      ),
+      ExtractedField(
+        key: 'total_ttc',
+        label: 'Total TTC',
+        value: totalAmount,
+        confidence: _confidenceScore(totalAmount, confidence),
+        requiredField: true,
+        requiresReview: totalAmount.trim().isEmpty,
+      ),
+      ExtractedField(
+        key: 'total_ht',
+        label: 'Total HT',
+        value: subtotalAmount,
+        confidence: _confidenceScore(subtotalAmount, confidence),
+        requiredField: false,
+        requiresReview: false,
+      ),
+      ExtractedField(
+        key: 'total_tva',
+        label: 'TVA',
+        value: taxAmount,
+        confidence: _confidenceScore(taxAmount, confidence),
+        requiredField: false,
+        requiresReview: false,
+      ),
+      ExtractedField(
+        key: 'currency',
+        label: 'Devise',
+        value: currency,
+        confidence: _confidenceScore(currency, confidence),
+        requiredField: false,
+        requiresReview: false,
+      ),
+    ];
+    final missingFields = fields
+        .where((field) => field.requiredField && field.value.trim().isEmpty)
+        .map((field) => field.key)
+        .toList();
 
     return ScanDraft(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
+      scannedDocumentId: '',
+      documentType: ScanDocumentType.facture,
       imagePath: imagePath,
+      serverImageUrl: '',
       rawText: normalized,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
@@ -84,6 +159,9 @@ class InvoiceRegexService {
       currency: currency,
       confidence: confidence,
       status: ScanDraftStatus.extracted,
+      fields: fields,
+      missingFieldKeys: missingFields,
+      supplierResolution: ScanSupplierResolution.initial(displayName: supplier),
     );
   }
 
@@ -146,7 +224,7 @@ class InvoiceRegexService {
     if (lower.contains('usd') || lower.contains('\$')) {
       return 'USD';
     }
-    return '';
+    return 'TND'; // Devise par défaut
   }
 
   double _computeConfidence({
@@ -168,5 +246,12 @@ class InvoiceRegexService {
 
     final found = checks.where((value) => value.trim().isNotEmpty).length;
     return found / checks.length;
+  }
+
+  int _confidenceScore(String value, double globalConfidence) {
+    if (value.trim().isEmpty) {
+      return 0;
+    }
+    return ((globalConfidence * 100).round().clamp(0, 100) as num).toInt();
   }
 }

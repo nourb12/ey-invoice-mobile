@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/l10n/app_texts.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/widgets/ey_background.dart';
 import '../../../core/widgets/ey_components.dart';
 import '../../auth/controllers/session_controller.dart';
-import '../../invoices/screens/invoices_list_screen.dart';
 import '../../scan/screens/dashboard_screen.dart';
 import '../../scan/screens/scan_history_screen.dart';
 import '../../scan/screens/scan_screen.dart';
+import 'scanned_invoices_portal_screen.dart';
 
 class MobileHomeShell extends StatefulWidget {
   const MobileHomeShell({super.key});
@@ -25,6 +26,7 @@ class _MobileHomeShellState extends State<MobileHomeShell> {
   Widget build(BuildContext context) {
     final themeController = context.read<ThemeController>();
     final sessionController = context.read<SessionController>();
+    final texts = AppTexts.of(context);
 
     final pages = <Widget>[
       DashboardScreen(
@@ -37,7 +39,7 @@ class _MobileHomeShellState extends State<MobileHomeShell> {
       ),
       const ScanScreen(),
       const ScanHistoryScreen(),
-      const InvoicesListScreen(),
+      const ScannedInvoicesPortalScreen(),
     ];
 
     return Scaffold(
@@ -61,25 +63,25 @@ class _MobileHomeShellState extends State<MobileHomeShell> {
                     children: [
                       _NavItem(
                         icon: Icons.dashboard_customize_outlined,
-                        label: 'Accueil',
+                        label: texts.t('nav.home'),
                         selected: _index == 0,
                         onTap: () => setState(() => _index = 0),
                       ),
                       _NavItem(
                         icon: Icons.document_scanner_outlined,
-                        label: 'Scanner',
+                        label: texts.t('nav.scan'),
                         selected: _index == 1,
                         onTap: () => setState(() => _index = 1),
                       ),
                       _NavItem(
                         icon: Icons.history_rounded,
-                        label: 'Historique',
+                        label: texts.t('nav.history'),
                         selected: _index == 2,
                         onTap: () => setState(() => _index = 2),
                       ),
                       _NavItem(
                         icon: Icons.receipt_long_outlined,
-                        label: 'Factures',
+                        label: texts.t('nav.scannedInvoices'),
                         selected: _index == 3,
                         onTap: () => setState(() => _index = 3),
                       ),
@@ -134,6 +136,8 @@ class _NavItem extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: selected ? colors.textPrimary : colors.textSecondary,
                 ),

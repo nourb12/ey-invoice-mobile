@@ -1,4 +1,129 @@
+import 'extracted_field.dart';
+import 'scan_supplier_match.dart';
+
 enum ScanDraftStatus { extracted, reviewed, validated }
+
+enum ScanDocumentType {
+  facture,
+  proforma,
+  avoir,
+  devis,
+  bonCommande,
+  bonLivraison,
+  bonSortie,
+  paiementRecu,
+  paiementEmis,
+  ordreFabrication,
+}
+
+extension ScanDocumentTypeX on ScanDocumentType {
+  String get apiValue {
+    switch (this) {
+      case ScanDocumentType.facture:
+        return 'facture';
+      case ScanDocumentType.proforma:
+        return 'proforma';
+      case ScanDocumentType.avoir:
+        return 'avoir';
+      case ScanDocumentType.devis:
+        return 'devis';
+      case ScanDocumentType.bonCommande:
+        return 'bon_commande';
+      case ScanDocumentType.bonLivraison:
+        return 'bon_livraison';
+      case ScanDocumentType.bonSortie:
+        return 'bon_sortie';
+      case ScanDocumentType.paiementRecu:
+        return 'paiement_recu';
+      case ScanDocumentType.paiementEmis:
+        return 'paiement_emis';
+      case ScanDocumentType.ordreFabrication:
+        return 'ordre_fabrication';
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case ScanDocumentType.facture:
+        return 'Facture';
+      case ScanDocumentType.proforma:
+        return 'Facture proforma';
+      case ScanDocumentType.avoir:
+        return 'Avoir';
+      case ScanDocumentType.devis:
+        return 'Devis';
+      case ScanDocumentType.bonCommande:
+        return 'Bon de commande';
+      case ScanDocumentType.bonLivraison:
+        return 'Bon de livraison';
+      case ScanDocumentType.bonSortie:
+        return 'Bon de sortie';
+      case ScanDocumentType.paiementRecu:
+        return 'Paiements reçus';
+      case ScanDocumentType.paiementEmis:
+        return 'Paiements émis';
+      case ScanDocumentType.ordreFabrication:
+        return 'Ordre de fabrication';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case ScanDocumentType.facture:
+        return 'Facture commerciale avec client, TVA, échéance et montants.';
+      case ScanDocumentType.proforma:
+        return 'Avant-projet commercial non comptable.';
+      case ScanDocumentType.avoir:
+        return 'Note de crédit ou annulation partielle.';
+      case ScanDocumentType.devis:
+        return 'Offre de prix avec client et montants.';
+      case ScanDocumentType.bonCommande:
+        return 'Commande fournisseur/client, articles et quantités.';
+      case ScanDocumentType.bonLivraison:
+        return 'BL, fournisseur, client, articles et totaux.';
+      case ScanDocumentType.bonSortie:
+        return 'Sortie de stock interne.';
+      case ScanDocumentType.paiementRecu:
+        return 'Encaissement client.';
+      case ScanDocumentType.paiementEmis:
+        return 'Décaissement fournisseur.';
+      case ScanDocumentType.ordreFabrication:
+        return 'Ordre de production interne.';
+    }
+  }
+
+  static ScanDocumentType fromApiValue(String? raw) {
+    switch (raw) {
+      case 'proforma':
+        return ScanDocumentType.proforma;
+      case 'avoir':
+      case 'credit_note':
+        return ScanDocumentType.avoir;
+      case 'devis':
+      case 'quote':
+        return ScanDocumentType.devis;
+      case 'bon_commande':
+      case 'purchase_order':
+        return ScanDocumentType.bonCommande;
+      case 'bon_livraison':
+      case 'delivery_note':
+        return ScanDocumentType.bonLivraison;
+      case 'bon_sortie':
+        return ScanDocumentType.bonSortie;
+      case 'paiement_recu':
+      case 'payment_receipt':
+        return ScanDocumentType.paiementRecu;
+      case 'paiement_emis':
+        return ScanDocumentType.paiementEmis;
+      case 'ordre_fabrication':
+        return ScanDocumentType.ordreFabrication;
+      case 'facture':
+      case 'supplier_invoice':
+      default:
+        return ScanDocumentType.facture;
+    }
+  }
+}
 
 extension ScanDraftStatusX on ScanDraftStatus {
   String get label {
@@ -16,7 +141,10 @@ extension ScanDraftStatusX on ScanDraftStatus {
 class ScanDraft {
   const ScanDraft({
     required this.id,
+    required this.scannedDocumentId,
+    required this.documentType,
     required this.imagePath,
+    required this.serverImageUrl,
     required this.rawText,
     required this.createdAt,
     required this.updatedAt,
@@ -30,10 +158,17 @@ class ScanDraft {
     required this.currency,
     required this.confidence,
     required this.status,
+    required this.fields,
+    required this.missingFieldKeys,
+    required this.supplierResolution,
+    this.backendTransactionId,
   });
 
   final String id;
+  final String scannedDocumentId;
+  final ScanDocumentType documentType;
   final String imagePath;
+  final String serverImageUrl;
   final String rawText;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -47,8 +182,15 @@ class ScanDraft {
   final String currency;
   final double confidence;
   final ScanDraftStatus status;
+  final List<ExtractedField> fields;
+  final List<String> missingFieldKeys;
+  final ScanSupplierResolution supplierResolution;
+  final String? backendTransactionId;
 
   String get title {
+    if (supplierResolution.displayName.isNotEmpty) {
+      return supplierResolution.displayName;
+    }
     if (supplierName.isNotEmpty) {
       return supplierName;
     }
@@ -68,7 +210,10 @@ class ScanDraft {
 
   ScanDraft copyWith({
     String? id,
+    String? scannedDocumentId,
+    ScanDocumentType? documentType,
     String? imagePath,
+    String? serverImageUrl,
     String? rawText,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -82,10 +227,17 @@ class ScanDraft {
     String? currency,
     double? confidence,
     ScanDraftStatus? status,
+    List<ExtractedField>? fields,
+    List<String>? missingFieldKeys,
+    ScanSupplierResolution? supplierResolution,
+    String? backendTransactionId,
   }) {
     return ScanDraft(
       id: id ?? this.id,
+      scannedDocumentId: scannedDocumentId ?? this.scannedDocumentId,
+      documentType: documentType ?? this.documentType,
       imagePath: imagePath ?? this.imagePath,
+      serverImageUrl: serverImageUrl ?? this.serverImageUrl,
       rawText: rawText ?? this.rawText,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -99,13 +251,22 @@ class ScanDraft {
       currency: currency ?? this.currency,
       confidence: confidence ?? this.confidence,
       status: status ?? this.status,
+      fields: fields ?? this.fields,
+      missingFieldKeys: missingFieldKeys ?? this.missingFieldKeys,
+      supplierResolution: supplierResolution ?? this.supplierResolution,
+      backendTransactionId: backendTransactionId ?? this.backendTransactionId,
     );
   }
 
   factory ScanDraft.fromJson(Map<String, dynamic> json) {
     return ScanDraft(
       id: json['id']?.toString() ?? '',
+      scannedDocumentId: json['scannedDocumentId']?.toString() ?? '',
+      documentType: ScanDocumentTypeX.fromApiValue(
+        json['documentType']?.toString(),
+      ),
       imagePath: json['imagePath']?.toString() ?? '',
+      serverImageUrl: json['serverImageUrl']?.toString() ?? '',
       rawText: json['rawText']?.toString() ?? '',
       createdAt:
           DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
@@ -126,13 +287,32 @@ class ScanDraft {
         (value) => value.name == json['status'],
         orElse: () => ScanDraftStatus.extracted,
       ),
+      fields: ((json['fields'] as List?) ?? const <dynamic>[])
+          .whereType<Map<String, dynamic>>()
+          .map(ExtractedField.fromJson)
+          .toList(),
+      missingFieldKeys:
+          ((json['missingFieldKeys'] as List?) ?? const <dynamic>[])
+              .map((item) => item.toString())
+              .toList(),
+      supplierResolution: json['supplierResolution'] is Map<String, dynamic>
+          ? ScanSupplierResolution.fromJson(
+              json['supplierResolution'] as Map<String, dynamic>,
+            )
+          : ScanSupplierResolution.initial(
+              displayName: json['supplierName']?.toString() ?? '',
+            ),
+      backendTransactionId: json['backendTransactionId']?.toString(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
+      'scannedDocumentId': scannedDocumentId,
+      'documentType': documentType.apiValue,
       'imagePath': imagePath,
+      'serverImageUrl': serverImageUrl,
       'rawText': rawText,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
@@ -146,6 +326,10 @@ class ScanDraft {
       'currency': currency,
       'confidence': confidence,
       'status': status.name,
+      'fields': fields.map((field) => field.toJson()).toList(),
+      'missingFieldKeys': missingFieldKeys,
+      'supplierResolution': supplierResolution.toJson(),
+      'backendTransactionId': backendTransactionId,
     };
   }
 }

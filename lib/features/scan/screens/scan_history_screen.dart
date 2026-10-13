@@ -56,7 +56,7 @@ class ScanHistoryScreen extends StatelessWidget {
           Text('Historique des scans', style: textTheme.headlineMedium),
           const SizedBox(height: 8),
           Text(
-            'Tous les brouillons OCR validés localement sur le mobile.',
+            'Tous les brouillons seront enregistrés dans votre mobile jusqu\'à ce que vous les validiez.',
             style: textTheme.bodyMedium?.copyWith(
               color: colors.textSecondary,
               height: 1.6,

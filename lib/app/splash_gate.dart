@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/l10n/app_texts.dart';
 import '../core/theme/theme_extensions.dart';
 import '../core/widgets/ey_background.dart';
 import '../core/widgets/ey_components.dart';
@@ -36,6 +37,7 @@ class _SplashLoadingView extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.ey;
     final textTheme = Theme.of(context).textTheme;
+    final texts = AppTexts.of(context);
 
     return Scaffold(
       backgroundColor: colors.pageBg,
@@ -49,13 +51,13 @@ class _SplashLoadingView extends StatelessWidget {
                 const EyBrandMark(size: 68),
                 const SizedBox(height: 22),
                 Text(
-                  'EY Invoice Mobile',
+                  texts.t('splash.title'),
                   style: textTheme.headlineMedium,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Initialisation du thème, de la session et des brouillons locaux.',
+                  texts.t('splash.subtitle'),
                   style: textTheme.bodyMedium?.copyWith(
                     color: colors.textSecondary,
                   ),

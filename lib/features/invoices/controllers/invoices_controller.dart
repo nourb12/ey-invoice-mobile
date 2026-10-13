@@ -96,7 +96,7 @@ class InvoicesController extends ChangeNotifier {
   }
 
   /// Mettre à jour une facture
-  Future<bool> updateInvoice(int id, Invoice invoice) async {
+  Future<bool> updateInvoice(String id, Invoice invoice) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -122,7 +122,7 @@ class InvoicesController extends ChangeNotifier {
   }
 
   /// Supprimer une facture
-  Future<bool> deleteInvoice(int id) async {
+  Future<bool> deleteInvoice(String id) async {
     _errorMessage = null;
 
     try {

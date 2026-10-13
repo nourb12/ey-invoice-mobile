@@ -21,7 +21,7 @@ class EyBrandMark extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: Text(
-        'EY',
+        'TF',
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
           color: colors.eyText,
           fontWeight: FontWeight.w900,
@@ -134,7 +134,7 @@ class EyPrimaryButton extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
             if (isLoading)
               SizedBox(
@@ -148,7 +148,15 @@ class EyPrimaryButton extends StatelessWidget {
             else if (icon != null)
               Icon(icon, size: 18),
             if (isLoading || icon != null) const SizedBox(width: 10),
-            Text(label),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                textAlign: TextAlign.center,
+              ),
+            ),
           ],
         ),
       ),
@@ -187,13 +195,21 @@ class EySecondaryButton extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
             if (icon != null) ...[
               Icon(icon, size: 18),
               const SizedBox(width: 10),
             ],
-            Text(label),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                textAlign: TextAlign.center,
+              ),
+            ),
           ],
         ),
       ),
@@ -286,21 +302,35 @@ class EyStatusChip extends StatelessWidget {
         break;
       case EyStatusTone.neutral:
         backgroundColor = colors.border1;
-        foregroundColor = colors.textSecondary;
+        // use primary text color for better contrast on neutral chips
+        foregroundColor = colors.textPrimary;
         break;
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+    final style =
+        Theme.of(context).textTheme.labelSmall?.copyWith(
           color: foregroundColor,
           letterSpacing: .4,
+          fontWeight: FontWeight.w600,
+        ) ??
+        TextStyle(
+          color: foregroundColor,
+          fontWeight: FontWeight.w600,
+        );
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 28, minWidth: 48),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: style,
         ),
       ),
     );

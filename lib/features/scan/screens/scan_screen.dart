@@ -5,8 +5,10 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/widgets/ey_components.dart';
 import '../controllers/scan_controller.dart';
+import '../l10n/scan_texts.dart';
 import '../models/scan_draft.dart';
 import 'scan_preview_screen.dart';
+import 'scan_success_screen.dart';
 
 class ScanScreen extends StatelessWidget {
   const ScanScreen({super.key});
@@ -27,12 +29,18 @@ class ScanScreen extends StatelessWidget {
     }
 
     if (draft != null) {
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(
+      final result = await Navigator.of(context).push<ScanSuccessAction?>(
+        MaterialPageRoute<ScanSuccessAction?>(
           builder: (_) =>
               ScanPreviewScreen(initialDraft: draft, isNewDraft: true),
         ),
       );
+
+      if (!context.mounted || result != ScanSuccessAction.scanAnother) {
+        return;
+      }
+
+      await _startScan(context, source);
     }
   }
 
@@ -42,54 +50,179 @@ class ScanScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final controller = context.watch<ScanController>();
     final latestDraft = controller.latestDraft;
+    final texts = ScanTexts.of(context);
+    final sheetMaxHeight = MediaQuery.of(context).size.height * 0.72;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Scanner une facture', style: textTheme.headlineMedium),
+          Text(texts.t('screen.title'), style: textTheme.headlineMedium),
           const SizedBox(height: 8),
-          Text(
-            'Même palette, mêmes polices, même ambiance que le web — avec un flux mobile orienté capture et correction.',
-            style: textTheme.bodyMedium?.copyWith(
-              color: colors.textSecondary,
-              height: 1.6,
-            ),
-          ),
           const SizedBox(height: 18),
           EySurfaceCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: const [
-                    EyStatusChip(label: 'OCR local', tone: EyStatusTone.ok),
-                    SizedBox(width: 8),
-                    EyStatusChip(label: 'Regex', tone: EyStatusTone.info),
-                    SizedBox(width: 8),
-                    EyStatusChip(
-                      label: 'Validation manuelle',
-                      tone: EyStatusTone.warn,
+                Text(texts.t('screen.sourceTitle'), style: textTheme.titleMedium),
+                const SizedBox(height: 12),
+                Text(texts.t('screen.documentType'), style: textTheme.titleSmall),
+                const SizedBox(height: 10),
+                // Modernized selector: tappable card opening bottom sheet with icons
+                InkWell(
+                  onTap: controller.isBusy
+                      ? null
+                        : () async {
+                          final chosen =
+                              await showModalBottomSheet<ScanDocumentType>(
+                            context: context,
+                            isScrollControlled: true,
+                            showDragHandle: true,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(24),
+                              ),
+                            ),
+                            builder: (_) => SafeArea(
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxHeight: sheetMaxHeight,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    8,
+                                    16,
+                                    16,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        texts.t('screen.documentType'),
+                                        style: textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        texts.t('screen.documentTypeHint'),
+                                        style: textTheme.bodySmall?.copyWith(
+                                          color: colors.textSecondary,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Expanded(
+                                        child: ListView.separated(
+                                          itemCount:
+                                              ScanDocumentType.values.length,
+                                          separatorBuilder: (_, _) =>
+                                              const SizedBox(height: 6),
+                                          itemBuilder: (_, index) {
+                                            final type =
+                                                ScanDocumentType.values[index];
+                                            final isSelected = type ==
+                                                controller.selectedDocumentType;
+
+                                            return Material(
+                                              color: isSelected
+                                                  ? colors.eySoft
+                                                  : colors.bgCard,
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              child: ListTile(
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 14,
+                                                  vertical: 6,
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                  side: BorderSide(
+                                                    color: isSelected
+                                                        ? colors.ey
+                                                        : colors.border1,
+                                                  ),
+                                                ),
+                                                leading: Icon(
+                                                  Icons.description_outlined,
+                                                  color: isSelected
+                                                      ? colors.eyText
+                                                      : colors.textSecondary,
+                                                ),
+                                                title: Text(
+                                                  texts.documentTypeLabel(type),
+                                                  style: textTheme.bodyLarge
+                                                      ?.copyWith(
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                                subtitle: Text(
+                                                  texts.documentTypeShort(type),
+                                                  style: textTheme.bodySmall
+                                                      ?.copyWith(
+                                                    color:
+                                                        colors.textSecondary,
+                                                  ),
+                                                ),
+                                                trailing: isSelected
+                                                    ? Icon(
+                                                        Icons.check_circle,
+                                                        color: colors.ey,
+                                                      )
+                                                    : const Icon(
+                                                        Icons.chevron_right,
+                                                      ),
+                                                onTap: () =>
+                                                    Navigator.of(context)
+                                                        .pop(type),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+
+                          if (chosen != null) controller.selectDocumentType(chosen);
+                        },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: colors.bgCard,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: colors.border1),
                     ),
-                  ],
+                    child: Row(
+                      children: [
+                        const Icon(Icons.folder_open_rounded),
+                        const SizedBox(width: 12),
+                        Expanded(child: Text(texts.documentTypeLabel(controller.selectedDocumentType))),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.keyboard_arrow_down_rounded),
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Text('Choisis une source', style: textTheme.titleMedium),
                 const SizedBox(height: 8),
                 Text(
-                  controller.supportsOcr
-                      ? 'La photo est analysée localement puis préremplie avant validation.'
-                      : 'Le moteur OCR local n’est pas disponible sur cette plateforme de prévisualisation.',
+                  texts.documentTypeDescription(controller.selectedDocumentType),
                   style: textTheme.bodySmall?.copyWith(
                     color: colors.textSecondary,
-                    height: 1.6,
+                    height: 1.5,
                   ),
                 ),
                 const SizedBox(height: 18),
                 EyPrimaryButton(
-                  label: 'Prendre une photo',
-                  icon: Icons.photo_camera_outlined,
+                  label: texts.t('screen.camera'),
                   isLoading: controller.isBusy,
                   onPressed: controller.supportsOcr
                       ? () => _startScan(context, ImageSource.camera)
@@ -97,8 +230,7 @@ class ScanScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 EySecondaryButton(
-                  label: 'Importer depuis la galerie',
-                  icon: Icons.photo_library_outlined,
+                  label: texts.t('screen.gallery'),
                   onPressed: controller.supportsOcr
                       ? () => _startScan(context, ImageSource.gallery)
                       : null,
@@ -111,32 +243,43 @@ class ScanScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Étapes du flux', style: textTheme.titleMedium),
+                Text(texts.t('screen.flowTitle'), style: textTheme.titleMedium),
                 const SizedBox(height: 12),
-                const _FlowItem(
+                _FlowItem(
                   step: '1',
-                  title: 'Capture',
-                  description: 'Caméra ou galerie selon le contexte.',
+                  title: texts.t('screen.flow1Title'),
+                  description: texts.t('screen.flow1Text'),
                 ),
                 const SizedBox(height: 12),
-                const _FlowItem(
+                _FlowItem(
                   step: '2',
-                  title: 'Lecture OCR',
-                  description:
-                      'Extraction locale du texte brut depuis l’image.',
+                  title: texts.t('screen.flow2Title'),
+                  description: texts.t('screen.flow2Text'),
                 ),
                 const SizedBox(height: 12),
-                const _FlowItem(
+                _FlowLegendItem(
                   step: '3',
-                  title: 'Préremplissage Regex',
-                  description:
-                      'Numéro, date, montants, TVA, fournisseur et devise.',
+                  title: texts.t('screen.flow3Title'),
+                  items: [
+                    _FlowLegendLine(
+                      color: const Color(0xFF1F9D55),
+                      label: texts.t('screen.flow3Good'),
+                    ),
+                    _FlowLegendLine(
+                      color: const Color(0xFFF08C00),
+                      label: texts.t('screen.flow3Review'),
+                    ),
+                    _FlowLegendLine(
+                      color: const Color(0xFFE03131),
+                      label: texts.t('screen.flow3Required'),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
-                const _FlowItem(
+                _FlowItem(
                   step: '4',
-                  title: 'Validation',
-                  description: 'Tu corriges manuellement avant de sauvegarder.',
+                  title: texts.t('screen.flow4Title'),
+                  description: texts.t('screen.flow4Text'),
                 ),
               ],
             ),
@@ -149,15 +292,15 @@ class ScanScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text('Dernier brouillon', style: textTheme.titleMedium),
+                      Text(texts.t('screen.latestDraft'), style: textTheme.titleMedium),
                       const Spacer(),
                       EyStatusChip(
-                        label: latestDraft.status.label,
+                        label: texts.draftStatusLabel(latestDraft.status),
                         tone: latestDraft.status == ScanDraftStatus.validated
                             ? EyStatusTone.ok
                             : latestDraft.status == ScanDraftStatus.reviewed
-                            ? EyStatusTone.info
-                            : EyStatusTone.warn,
+                                ? EyStatusTone.info
+                                : EyStatusTone.warn,
                       ),
                     ],
                   ),
@@ -177,8 +320,7 @@ class ScanScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   EySecondaryButton(
-                    label: 'Ouvrir la correction',
-                    icon: Icons.edit_note_rounded,
+                    label: texts.t('screen.openDraft'),
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
@@ -231,7 +373,7 @@ class _FlowItem extends StatelessWidget {
             step,
             style: textTheme.labelMedium?.copyWith(
               color: colors.eyText,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
@@ -240,12 +382,18 @@ class _FlowItem extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: textTheme.bodyLarge),
-              const SizedBox(height: 2),
+              Text(
+                title,
+                style: textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 4),
               Text(
                 description,
                 style: textTheme.bodySmall?.copyWith(
                   color: colors.textSecondary,
+                  height: 1.5,
                 ),
               ),
             ],
@@ -254,4 +402,96 @@ class _FlowItem extends StatelessWidget {
       ],
     );
   }
+}
+
+class _FlowLegendItem extends StatelessWidget {
+  const _FlowLegendItem({
+    required this.step,
+    required this.title,
+    required this.items,
+  });
+
+  final String step;
+  final String title;
+  final List<_FlowLegendLine> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.ey;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: colors.ey,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            step,
+            style: textTheme.labelMedium?.copyWith(
+              color: colors.eyText,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: item.color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          item.label,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colors.textSecondary,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FlowLegendLine {
+  const _FlowLegendLine({
+    required this.color,
+    required this.label,
+  });
+
+  final Color color;
+  final String label;
 }

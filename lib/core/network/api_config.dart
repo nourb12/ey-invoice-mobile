@@ -1,6 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
+
+import 'api_config_dev.dart';
 
 abstract final class ApiConfig {
   static const String _overrideBaseUrl = String.fromEnvironment(
@@ -13,14 +13,26 @@ abstract final class ApiConfig {
       return _overrideBaseUrl;
     }
 
-    if (kIsWeb) {
-      return 'http://localhost:5001/api';
+    if (kReleaseMode) {
+      throw StateError('API_BASE_URL doit etre fourni en release avec --dart-define.');
     }
 
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:5001/api';
-    }
-
-    return 'http://localhost:5001/api';
+    return ApiConfigDev.baseUrl;
   }
+
+  static List<String> get baseUrls {
+    if (_overrideBaseUrl.isNotEmpty) {
+      return <String>[_overrideBaseUrl];
+    }
+
+    if (kReleaseMode) {
+      throw StateError('API_BASE_URL doit etre fourni en release avec --dart-define.');
+    }
+
+    return ApiConfigDev.baseUrls;
+  }
+
+  static List<Uri> uris(String path) => baseUrls
+      .map((baseUrl) => Uri.parse('$baseUrl$path'))
+      .toList(growable: false);
 }

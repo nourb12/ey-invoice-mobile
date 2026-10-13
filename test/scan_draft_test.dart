@@ -1,11 +1,15 @@
-import 'package:ey_invoice_mobile/features/scan/models/scan_draft.dart';
+﻿import 'package:ey_invoice_mobile/features/scan/models/scan_draft.dart';
+import 'package:ey_invoice_mobile/features/scan/models/scan_supplier_match.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('scan draft serializes and restores its status', () {
     final draft = ScanDraft(
       id: '1',
+      scannedDocumentId: 'scan-1',
+      documentType: ScanDocumentType.facture,
       imagePath: 'image.jpg',
+      serverImageUrl: '/uploads/scan-1.jpg',
       rawText: 'FACTURE 001',
       createdAt: DateTime.parse('2026-05-01T10:00:00.000Z'),
       updatedAt: DateTime.parse('2026-05-01T10:00:00.000Z'),
@@ -19,6 +23,9 @@ void main() {
       currency: 'TND',
       confidence: .8,
       status: ScanDraftStatus.reviewed,
+      fields: const [],
+      missingFieldKeys: const [],
+      supplierResolution: ScanSupplierResolution.initial(displayName: 'ACME'),
     );
 
     final restored = ScanDraft.fromJson(draft.toJson());
@@ -28,3 +35,4 @@ void main() {
     expect(restored.totalAmount, '100.00');
   });
 }
+
