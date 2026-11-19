@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/l10n/app_texts.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/widgets/ey_background.dart';
 import '../../../core/widgets/ey_components.dart';
@@ -33,7 +34,7 @@ class _OtpScreenState extends State<OtpScreen> {
     final code = _codeController.text.trim();
     if (code.length < 6) {
       setState(() {
-        _localError = 'Le code 2FA doit contenir 6 chiffres.';
+        _localError = AppTexts.of(context).t('otp.invalid');
       });
       return;
     }
@@ -46,7 +47,10 @@ class _OtpScreenState extends State<OtpScreen> {
     final colors = context.ey;
     final textTheme = Theme.of(context).textTheme;
     final session = context.watch<SessionController>();
-    final errorMessage = session.errorMessage ?? _localError;
+    final texts = AppTexts.of(context);
+    final errorMessage = session.errorKey == null
+        ? _localError
+        : texts.t(session.errorKey!);
 
     return Scaffold(
       backgroundColor: colors.pageBg,
@@ -66,21 +70,21 @@ class _OtpScreenState extends State<OtpScreen> {
                       const EyBrandMark(),
                       const SizedBox(width: 12),
                       Text(
-                        'Double authentification',
+                        texts.t('otp.twoFactor'),
                         style: textTheme.titleMedium,
                       ),
                     ],
                   ),
                   const SizedBox(height: 18),
-                  const EyEyebrow(label: 'Étape de sécurité'),
+                  EyEyebrow(label: texts.t('otp.securityStep')),
                   const SizedBox(height: 16),
                   Text(
-                    'Saisis le code généré par ton application 2FA.',
+                    texts.t('otp.instruction'),
                     style: textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Ton backend demande cette validation après le mot de passe. On reste alignés avec le web.',
+                    texts.t('otp.description'),
                     style: textTheme.bodyMedium?.copyWith(
                       color: colors.textSecondary,
                       height: 1.6,
@@ -107,11 +111,13 @@ class _OtpScreenState extends State<OtpScreen> {
                     const SizedBox(height: 16),
                   ],
                   EyTextField(
-                    label: 'Code 2FA',
+                    label: texts.t('otp.code'),
                     controller: _codeController,
                     hint: '000000',
                     mono: true,
                     keyboardType: TextInputType.number,
+                    textDirection: TextDirection.ltr,
+                    autofillHints: const [AutofillHints.oneTimeCode],
                     textInputAction: TextInputAction.done,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
@@ -120,20 +126,17 @@ class _OtpScreenState extends State<OtpScreen> {
                     onSubmitted: (_) => _validate(),
                   ),
                   const SizedBox(height: 10),
-                  Text(
-                    'Astuce: garde le code au format numérique sur 6 chiffres.',
-                    style: textTheme.bodySmall,
-                  ),
+                  Text(texts.t('otp.tip'), style: textTheme.bodySmall),
                   const SizedBox(height: 18),
                   EyPrimaryButton(
-                    label: 'Valider le code',
+                    label: texts.t('otp.validate'),
                     icon: Icons.verified_rounded,
                     isLoading: session.isBusy,
                     onPressed: _validate,
                   ),
                   const SizedBox(height: 12),
                   EySecondaryButton(
-                    label: 'Retour à la connexion',
+                    label: texts.t('otp.backToLogin'),
                     icon: Icons.arrow_back_rounded,
                     onPressed: session.isBusy ? null : session.cancelTwoFactor,
                   ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/network/portal_config.dart';
 
 import '../../../core/l10n/app_texts.dart';
 import '../../../core/theme/theme_controller.dart';
@@ -57,7 +59,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final session = context.watch<SessionController>();
     final themeController = context.read<ThemeController>();
     final texts = AppTexts.of(context);
-    final errorMessage = session.errorMessage ?? _localError;
+    final errorMessage = session.errorKey == null
+        ? _localError
+        : texts.t(session.errorKey!);
 
     return Scaffold(
       backgroundColor: colors.pageBg,
@@ -147,7 +151,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ),
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Icon(
                                         Icons.error_outline_rounded,
@@ -174,7 +179,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 hint: texts.t('login.emailHint'),
                                 keyboardType: TextInputType.emailAddress,
                                 textInputAction: TextInputAction.next,
-                                prefixIcon: const Icon(Icons.alternate_email_rounded),
+                                prefixIcon: const Icon(
+                                  Icons.alternate_email_rounded,
+                                ),
                               ),
                               const SizedBox(height: 14),
                               EyTextField(
@@ -184,7 +191,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 obscureText: _obscurePassword,
                                 textInputAction: TextInputAction.done,
                                 onSubmitted: (_) => _submit(),
-                                prefixIcon: const Icon(Icons.lock_outline_rounded),
+                                prefixIcon: const Icon(
+                                  Icons.lock_outline_rounded,
+                                ),
                                 suffixIcon: IconButton(
                                   onPressed: () {
                                     setState(() {
@@ -199,6 +208,34 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               const SizedBox(height: 18),
+                              Align(
+                                alignment: AlignmentDirectional.centerEnd,
+                                child: TextButton(
+                                  child: Text(texts.t('login.forgotPassword')),
+                                  onPressed: () async {
+                                    try {
+                                      final opened = await launchUrl(
+                                        PortalConfig.uri('/forgot-password'),
+                                        mode: LaunchMode.externalApplication,
+                                      );
+                                      if (!opened) {
+                                        throw StateError('Unavailable');
+                                      }
+                                    } catch (_) {
+                                      if (!context.mounted) return;
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            texts.t('portal.openError'),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
                               EyPrimaryButton(
                                 label: texts.t('login.submit'),
                                 icon: Icons.arrow_forward_rounded,

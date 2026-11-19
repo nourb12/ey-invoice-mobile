@@ -44,48 +44,77 @@ class EyInvoiceMobileApp extends StatelessWidget {
           ),
           lazy: true,
         ),
-        ChangeNotifierProvider<ScanController>(
-          create: (context) {
-            final apiService = ScanApiService(
-              accessTokenProvider: () =>
-                  context.read<SessionController>().session?.accessToken,
-            );
-            return ScanController(
-              draftStore: ScanDraftStore(),
-              apiService: apiService,
-              submissionService: ScanSubmissionService(apiService: apiService),
-            )..loadDrafts();
-          },
-          lazy: false,
-        ),
       ],
-      child: Consumer2<ThemeController, LanguageController>(
-        builder: (context, themeController, languageController, _) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'EY Invoice Mobile',
-            locale: languageController.locale,
-            supportedLocales: LanguageController.supportedLocales,
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            // Force LTR layout for all languages (including Arabic)
-            // This keeps the visual structure consistent - only text changes
-            builder: (context, child) {
-              return Directionality(
-                textDirection: TextDirection.ltr,
-                child: child!,
-              );
-            },
-            themeMode: themeController.themeMode,
-            theme: AppTheme.light(),
-            darkTheme: AppTheme.dark(),
-            home: const SplashGate(),
-          );
-        },
+      child: _ScanAccountScope(
+        child: Consumer2<ThemeController, LanguageController>(
+          builder: (context, themeController, languageController, _) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: 'EY Invoice Mobile',
+              locale: languageController.locale,
+              supportedLocales: LanguageController.supportedLocales,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              builder: (context, child) {
+                return Directionality(
+                  textDirection: LanguageController.textDirectionFor(
+                    languageController.languageCode,
+                  ),
+                  child: child!,
+                );
+              },
+              themeMode: themeController.themeMode,
+              theme: AppTheme.light(
+                languageCode: languageController.languageCode,
+              ),
+              darkTheme: AppTheme.dark(
+                languageCode: languageController.languageCode,
+              ),
+              home: const SplashGate(),
+            );
+          },
+        ),
       ),
+    );
+  }
+}
+
+/// Rebuild the signed-in navigation and its drafts when the account changes.
+class _ScanAccountScope extends StatelessWidget {
+  const _ScanAccountScope({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionController>().session;
+    final user = session?.utilisateur;
+    final account = user == null
+        ? 'signed-out'
+        : '${user.entrepriseId}:${user.id}';
+    return ChangeNotifierProvider<ScanController>(
+      key: ValueKey(account),
+      lazy: false,
+      create: (context) {
+        final sessions = context.read<SessionController>();
+        final api = ScanApiService(
+          accessTokenProvider: () {
+            final current = sessions.session;
+            return current?.utilisateur.id == user?.id &&
+                    current?.utilisateur.entrepriseId == user?.entrepriseId
+                ? current?.accessToken
+                : null;
+          },
+        );
+        return ScanController(
+          draftStore: ScanDraftStore(accountKey: account),
+          apiService: api,
+          submissionService: ScanSubmissionService(apiService: api),
+        )..loadDrafts();
+      },
+      child: child,
     );
   }
 }

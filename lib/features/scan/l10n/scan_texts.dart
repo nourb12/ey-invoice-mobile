@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart' as intl;
 
 import '../models/scan_draft.dart';
 import '../models/scan_supplier_match.dart';
@@ -22,8 +23,56 @@ class ScanTexts {
 
   String t(String key) => _bundle[key] ?? _fr[key] ?? key;
 
+  String requestError(int? status) => t(switch (status) {
+    401 => 'error.auth',
+    403 => 'error.forbidden',
+    413 => 'error.large',
+    400 || 422 => 'error.validation',
+    _ => 'error.retry',
+  });
+
+  /// Message for a ScanController error: the HTTP status wins, then the key.
+  String controllerError(String? key, int? status) =>
+      status != null ? requestError(status) : t(key ?? 'error.retry');
+
+  String fieldLabel(String key, String fallback) {
+    final canonical = key.replaceFirst(
+      RegExp(r'^(merchant|issuer)_'),
+      'supplier_',
+    );
+    return _bundle['field.$canonical'] ?? _fr['field.$canonical'] ?? fallback;
+  }
+
   String documentTypeLabel(ScanDocumentType type) =>
       t('doc.${type.name}.label');
+
+  String draftTitle(ScanDraft draft) {
+    final name = draft.supplierResolution.displayName.trim().isNotEmpty
+        ? draft.supplierResolution.displayName
+        : draft.supplierName;
+    if (name.trim().isNotEmpty) return name;
+    return draft.invoiceNumber.isEmpty
+        ? t('draft.unnamed')
+        : '${documentTypeLabel(draft.documentType)} ${draft.invoiceNumber}';
+  }
+
+  String draftAmount(ScanDraft draft) {
+    if (draft.totalAmount.trim().isEmpty) return t('draft.noAmount');
+    final number = double.tryParse(
+      draft.totalAmount
+          .replaceAll(RegExp(r'[\s\u00a0\u202f]'), '')
+          .replaceAll(',', '.'),
+    );
+    if (number == null || !number.isFinite) return draft.amountLabel;
+    return intl.NumberFormat.currency(
+      locale: _languageCode,
+      name: draft.currency,
+      decimalDigits: draft.currency.toUpperCase() == 'TND' ? 3 : 2,
+    ).format(number);
+  }
+
+  String draftDate(DateTime date) =>
+      intl.DateFormat.yMd(_languageCode).add_Hm().format(date.toLocal());
 
   String documentTypeDescription(ScanDocumentType type) =>
       t('doc.${type.name}.description');
@@ -42,12 +91,51 @@ class ScanTexts {
       t('supplier.${status.name}.note');
 
   static const Map<String, String> _fr = <String, String>{
+    'draft.unnamed': 'Document sans référence',
+    'draft.noAmount': 'Montant à vérifier',
+    'error.auth': 'Votre session a expiré. Reconnectez-vous.',
+    'error.forbidden': 'Votre compte ne peut pas effectuer cette action.',
+    'error.large':
+        'Le document est trop volumineux. Choisissez un fichier plus léger.',
+    'error.validation':
+        'Vérifiez les informations obligatoires et le fournisseur avant de réessayer.',
+    'error.retry':
+        'L’opération est indisponible. Vérifiez votre connexion puis réessayez.',
+    'error.draftsLoad': 'Impossible de charger les brouillons.',
+    'error.camera': 'Autorisez la caméra pour lancer le scan.',
+    'error.scanFailed': 'Le scan a échoué. Réessayez avec une image plus nette.',
+    'error.importFailed': 'Impossible d’importer ce document. Réessayez.',
+    'error.submitFailed': 'Envoi impossible. Votre brouillon est conservé.',
+    'field.image_quality_warning': 'Qualité de l’image',
+    'field.document_number': 'Référence du document',
+    'field.invoice_number': 'Numéro de facture',
+    'field.supplier_name': 'Fournisseur',
+    'field.supplier_tax_id': 'Matricule fiscal fournisseur',
+    'field.supplier_address': 'Adresse fournisseur',
+    'field.supplier_iban': 'Compte bancaire fournisseur',
+    'field.client_name': 'Client',
+    'field.issue_date': 'Date du document',
+    'field.due_date': 'Échéance',
+    'field.net_ht': 'Montant net hors taxes',
+    'field.total_ht': 'Total hors taxes',
+    'field.brut_ht': 'Montant brut hors taxes',
+    'field.total_tva': 'Montant de TVA',
+    'field.total_ttc': 'Total toutes taxes comprises',
+    'field.total_to_pay': 'Net à payer',
+    'field.amount': 'Montant',
+    'field.currency': 'Devise',
+    'field.trade_sense': 'Achat ou vente',
+    'field.payment_status': 'État du paiement',
+    'field.stamp_duty': 'Timbre fiscal',
+    'field.fodec': 'FODEC',
+    'field.withholding_tax': 'Retenue à la source',
+    'field.discount': 'Remise',
     'screen.title': 'Scanner vos documents',
     'screen.subtitle':
         'Choisissez le type de document, prenez une photo puis vérifiez les champs avant envoi.',
     'screen.sourceTitle': 'Choisissez votre source',
     'screen.sourceReady':
-        'Le scan envoie l’image au serveur puis PaddleOCR retourne les champs avec leurs scores.',
+        'Photographiez votre document, puis vérifiez les informations reconnues.',
     'screen.sourceUnavailable':
         'Le service de scan n’est pas disponible pour le moment.',
     'screen.documentType': 'Type de document',
@@ -78,8 +166,24 @@ class ScanTexts {
         'Vert à partir de 70%, orange à vérifier, rouge si le champ est absent.',
     'preview.required': 'Champ requis',
     'preview.optional': 'Optionnel',
-    'preview.rawText': 'Texte OCR brut',
-    'preview.rawTextEmpty': 'Aucun texte OCR brut retourné.',
+    'preview.rawText': 'Texte reconnu',
+    'preview.rawTextEmpty': 'Aucun texte reconnu.',
+    'preview.back': 'Retour',
+    'preview.expand': 'Agrandir',
+    'preview.documentType': 'Type de document',
+    'preview.addMissingField': 'Ajouter un champ manquant',
+    'preview.addField': 'Ajouter un champ',
+    'preview.fieldTitle': 'Titre du champ',
+    'preview.fieldTitleHint': 'Ex. Chauffeur, Camion, Cachet',
+    'preview.fieldContent': 'Contenu',
+    'preview.fieldContentHint': 'Valeur lue sur le papier',
+    'preview.cancel': 'Annuler',
+    'preview.add': 'Ajouter',
+    'preview.purchase': 'Achat',
+    'preview.sale': 'Vente',
+    'preview.paid': 'Payé',
+    'preview.pending': 'En attente',
+    'preview.unpaid': 'Impayé',
     'preview.saveDraft': 'Enregistrer le brouillon',
     'preview.submit': 'Valider et envoyer',
     'preview.blocking':
@@ -107,7 +211,7 @@ class ScanTexts {
     'supplier.autoMatched.note': 'Le fournisseur existe déjà dans votre base.',
     'supplier.needsChoice.label': 'Choix requis',
     'supplier.needsChoice.note':
-        'Plusieurs fournisseurs ressemblent au résultat OCR.',
+        'Plusieurs fournisseurs correspondent aux informations reconnues.',
     'supplier.notFound.label': 'Non trouvé',
     'supplier.notFound.note': 'Aucun fournisseur correspondant n’a été trouvé.',
     'supplier.created.label': 'Créé',
@@ -130,41 +234,38 @@ class ScanTexts {
     'draft.extracted': 'Extrait',
     'draft.reviewed': 'Brouillon',
     'draft.validated': 'Envoyé',
-    'doc.facture.label': 'Facture',
+    'doc.facture.label': 'فاتورة',
     'doc.facture.description':
-        'Facture achat/vente avec parties, TVA, echeance et totaux.',
-    'doc.facture.short': 'Facture',
-    'doc.proforma.label': 'Facture proforma',
-    'doc.proforma.description': 'Proforma commerciale non comptable.',
-    'doc.proforma.short': 'Proforma',
-    'doc.avoir.label': 'Avoir',
-    'doc.avoir.description': 'Avoir ou note de credit.',
-    'doc.avoir.short': 'Avoir',
-    'doc.devis.label': 'Devis',
-    'doc.devis.description': 'Offre de prix avec client et montants.',
-    'doc.devis.short': 'Devis',
-    'doc.bonCommande.label': 'Bon de commande',
-    'doc.bonCommande.description':
-        'Commande fournisseur/client, articles et quantites.',
-    'doc.bonCommande.short': 'Commande',
-    'doc.bonLivraison.label': 'Bon de livraison',
+        'فاتورة شراء أو بيع مع الأطراف والضريبة وتاريخ الاستحقاق والإجماليات.',
+    'doc.facture.short': 'فاتورة',
+    'doc.proforma.label': 'فاتورة شكلية',
+    'doc.proforma.description': 'عرض تجاري غير محاسبي.',
+    'doc.proforma.short': 'شكلية',
+    'doc.avoir.label': 'إشعار دائن',
+    'doc.avoir.description': 'إشعار دائن أو مذكرة ائتمان.',
+    'doc.avoir.short': 'إشعار دائن',
+    'doc.devis.label': 'عرض سعر',
+    'doc.devis.description': 'عرض سعر مع العميل والمبالغ.',
+    'doc.devis.short': 'عرض سعر',
+    'doc.bonCommande.label': 'أمر شراء',
+    'doc.bonCommande.description': 'طلب مورد أو عميل، أصناف وكميات.',
+    'doc.bonCommande.short': 'طلب',
+    'doc.bonLivraison.label': 'إذن تسليم',
     'doc.bonLivraison.description':
-        'BL avec emetteur, destinataire, articles et totaux.',
-    'doc.bonLivraison.short': 'BL',
-    'doc.bonSortie.label': 'Bon de sortie',
-    'doc.bonSortie.description': 'Sortie de stock ou sortie interne.',
-    'doc.bonSortie.short': 'Sortie',
-    'doc.paiementRecu.label': 'Paiement recu',
-    'doc.paiementRecu.description':
-        'Encaissement client, reference et montant.',
-    'doc.paiementRecu.short': 'Encaissement',
-    'doc.paiementEmis.label': 'Paiement emis',
-    'doc.paiementEmis.description':
-        'Decaissement fournisseur, reference et montant.',
-    'doc.paiementEmis.short': 'Decaissement',
-    'doc.ordreFabrication.label': 'Ordre de fabrication',
-    'doc.ordreFabrication.description': 'Ordre de production interne.',
-    'doc.ordreFabrication.short': 'Fabrication',
+        'إذن تسليم مع المرسل والمستلم والأصناف والإجماليات.',
+    'doc.bonLivraison.short': 'إذن تسليم',
+    'doc.bonSortie.label': 'إذن إخراج',
+    'doc.bonSortie.description': 'إخراج مخزون أو حركة داخلية.',
+    'doc.bonSortie.short': 'إخراج',
+    'doc.paiementRecu.label': 'دفعة مستلمة',
+    'doc.paiementRecu.description': 'تحصيل من عميل مع المرجع والمبلغ.',
+    'doc.paiementRecu.short': 'تحصيل',
+    'doc.paiementEmis.label': 'دفعة صادرة',
+    'doc.paiementEmis.description': 'دفع لمورد مع المرجع والمبلغ.',
+    'doc.paiementEmis.short': 'دفع',
+    'doc.ordreFabrication.label': 'أمر تصنيع',
+    'doc.ordreFabrication.description': 'أمر إنتاج داخلي.',
+    'doc.ordreFabrication.short': 'تصنيع',
     'doc.supplierInvoice.label': 'Facture fournisseur',
     'doc.supplierInvoice.description':
         'TVA, fournisseur, numéro, échéance et montants.',
@@ -203,12 +304,50 @@ class ScanTexts {
   };
 
   static const Map<String, String> _en = <String, String>{
+    'draft.unnamed': 'Document without reference',
+    'draft.noAmount': 'Amount to check',
+    'error.auth': 'Your session has expired. Sign in again.',
+    'error.forbidden': 'Your account cannot perform this action.',
+    'error.large': 'The document is too large. Choose a smaller file.',
+    'error.validation':
+        'Check the required information and supplier before trying again.',
+    'error.retry':
+        'This action is unavailable. Check your connection and retry.',
+    'error.draftsLoad': 'Unable to load your drafts.',
+    'error.camera': 'Allow camera access to start scanning.',
+    'error.scanFailed': 'The scan failed. Try again with a sharper image.',
+    'error.importFailed': 'Unable to import this document. Please try again.',
+    'error.submitFailed': 'Sending failed. Your draft has been kept.',
+    'field.image_quality_warning': 'Image quality',
+    'field.document_number': 'Document reference',
+    'field.invoice_number': 'Invoice number',
+    'field.supplier_name': 'Supplier',
+    'field.supplier_tax_id': 'Supplier tax identifier',
+    'field.supplier_address': 'Supplier address',
+    'field.supplier_iban': 'Supplier bank account',
+    'field.client_name': 'Customer',
+    'field.issue_date': 'Document date',
+    'field.due_date': 'Due date',
+    'field.net_ht': 'Net amount before tax',
+    'field.total_ht': 'Total before tax',
+    'field.brut_ht': 'Gross amount before tax',
+    'field.total_tva': 'VAT amount',
+    'field.total_ttc': 'Total including tax',
+    'field.total_to_pay': 'Amount payable',
+    'field.amount': 'Amount',
+    'field.currency': 'Currency',
+    'field.trade_sense': 'Purchase or sale',
+    'field.payment_status': 'Payment status',
+    'field.stamp_duty': 'Stamp duty',
+    'field.fodec': 'FODEC',
+    'field.withholding_tax': 'Withholding tax',
+    'field.discount': 'Discount',
     'screen.title': 'Scan your documents',
     'screen.subtitle':
         'Choose the document type, take a picture, then review the fields before sending.',
     'screen.sourceTitle': 'Choose your source',
     'screen.sourceReady':
-        'The scan uploads the image to the server, then PaddleOCR returns the extracted fields and scores.',
+        'Photograph your document, then check the recognized information.',
     'screen.sourceUnavailable': 'The scan service is currently unavailable.',
     'screen.documentType': 'Document type',
     'screen.documentTypeHint':
@@ -238,8 +377,24 @@ class ScanTexts {
         'Green at 70%+, orange for review, red when the field is missing.',
     'preview.required': 'Required field',
     'preview.optional': 'Optional',
-    'preview.rawText': 'Raw OCR text',
-    'preview.rawTextEmpty': 'No raw OCR text returned.',
+    'preview.rawText': 'Recognized text',
+    'preview.rawTextEmpty': 'No text recognized.',
+    'preview.back': 'Back',
+    'preview.expand': 'Expand',
+    'preview.documentType': 'Document type',
+    'preview.addMissingField': 'Add a missing field',
+    'preview.addField': 'Add a field',
+    'preview.fieldTitle': 'Field title',
+    'preview.fieldTitleHint': 'E.g. Driver, Truck, Stamp',
+    'preview.fieldContent': 'Content',
+    'preview.fieldContentHint': 'Value read on the paper',
+    'preview.cancel': 'Cancel',
+    'preview.add': 'Add',
+    'preview.purchase': 'Purchase',
+    'preview.sale': 'Sale',
+    'preview.paid': 'Paid',
+    'preview.pending': 'Pending',
+    'preview.unpaid': 'Unpaid',
     'preview.saveDraft': 'Save draft',
     'preview.submit': 'Validate and send',
     'preview.blocking': 'Complete the required red fields before sending.',
@@ -268,7 +423,7 @@ class ScanTexts {
         'The supplier already exists in your directory.',
     'supplier.needsChoice.label': 'Choice required',
     'supplier.needsChoice.note':
-        'Multiple suppliers look close to the OCR result.',
+        'Several suppliers match the recognized information.',
     'supplier.notFound.label': 'Not found',
     'supplier.notFound.note': 'No supplier matched the scanned data.',
     'supplier.created.label': 'Created',
@@ -362,12 +517,47 @@ class ScanTexts {
   };
 
   static const Map<String, String> _ar = <String, String>{
+    'draft.unnamed': 'مستند دون مرجع',
+    'draft.noAmount': 'مبلغ للمراجعة',
+    'error.auth': 'انتهت الجلسة. سجل الدخول مجدداً.',
+    'error.forbidden': 'حسابك غير مخوّل للقيام بهذا الإجراء.',
+    'error.large': 'حجم المستند كبير جداً. اختر ملفاً أصغر.',
+    'error.validation': 'راجع المعلومات المطلوبة والمورد قبل إعادة المحاولة.',
+    'error.retry': 'الإجراء غير متاح. تحقق من الاتصال وحاول مجدداً.',
+    'error.draftsLoad': 'تعذر تحميل المسودات.',
+    'error.camera': 'اسمح باستخدام الكاميرا لبدء المسح.',
+    'error.scanFailed': 'فشل المسح. أعد المحاولة بصورة أوضح.',
+    'error.importFailed': 'تعذر استيراد هذا المستند. حاول مجدداً.',
+    'error.submitFailed': 'تعذر الإرسال. تم الاحتفاظ بالمسودة.',
+    'field.image_quality_warning': 'جودة الصورة',
+    'field.document_number': 'مرجع المستند',
+    'field.invoice_number': 'رقم الفاتورة',
+    'field.supplier_name': 'المورد',
+    'field.supplier_tax_id': 'المعرف الجبائي للمورد',
+    'field.supplier_address': 'عنوان المورد',
+    'field.supplier_iban': 'الحساب البنكي للمورد',
+    'field.client_name': 'الحريف',
+    'field.issue_date': 'تاريخ المستند',
+    'field.due_date': 'تاريخ الاستحقاق',
+    'field.net_ht': 'المبلغ الصافي دون أداء',
+    'field.total_ht': 'الإجمالي دون أداء',
+    'field.brut_ht': 'المبلغ الخام دون أداء',
+    'field.total_tva': 'مبلغ الأداء على القيمة المضافة',
+    'field.total_ttc': 'الإجمالي شامل الأداءات',
+    'field.total_to_pay': 'الصافي للدفع',
+    'field.amount': 'المبلغ',
+    'field.currency': 'العملة',
+    'field.trade_sense': 'شراء أو بيع',
+    'field.payment_status': 'حالة الدفع',
+    'field.stamp_duty': 'الطابع الجبائي',
+    'field.fodec': 'FODEC',
+    'field.withholding_tax': 'الخصم من المورد',
+    'field.discount': 'التخفيض',
     'screen.title': 'امسح مستنداتك',
     'screen.subtitle':
         'اختر نوع المستند ثم التقط صورة وراجع الحقول قبل الإرسال.',
     'screen.sourceTitle': 'اختر مصدر المستند',
-    'screen.sourceReady':
-        'يتم رفع الصورة إلى الخادم ثم يعيد PaddleOCR الحقول مع نسب الثقة.',
+    'screen.sourceReady': 'التقط صورة للمستند ثم راجع المعلومات المستخرجة.',
     'screen.sourceUnavailable': 'خدمة المسح غير متاحة حالياً.',
     'screen.documentType': 'نوع المستند',
     'screen.documentTypeHint': 'اختر أقرب نوع لتحسين جودة الاستخراج.',
@@ -396,8 +586,24 @@ class ScanTexts {
         'الأخضر من 70%، البرتقالي للمراجعة، والأحمر عند غياب الحقل.',
     'preview.required': 'حقل مطلوب',
     'preview.optional': 'اختياري',
-    'preview.rawText': 'النص الخام من OCR',
-    'preview.rawTextEmpty': 'لم يتم إرجاع نص OCR خام.',
+    'preview.rawText': 'النص المستخرج',
+    'preview.rawTextEmpty': 'لم يتم استخراج نص.',
+    'preview.back': 'رجوع',
+    'preview.expand': 'تكبير',
+    'preview.documentType': 'نوع المستند',
+    'preview.addMissingField': 'إضافة حقل مفقود',
+    'preview.addField': 'إضافة حقل',
+    'preview.fieldTitle': 'عنوان الحقل',
+    'preview.fieldTitleHint': 'مثال: سائق، شاحنة، ختم',
+    'preview.fieldContent': 'المحتوى',
+    'preview.fieldContentHint': 'القيمة المقروءة من الورقة',
+    'preview.cancel': 'إلغاء',
+    'preview.add': 'إضافة',
+    'preview.purchase': 'شراء',
+    'preview.sale': 'بيع',
+    'preview.paid': 'مدفوع',
+    'preview.pending': 'قيد الانتظار',
+    'preview.unpaid': 'غير مدفوع',
     'preview.saveDraft': 'حفظ المسودة',
     'preview.submit': 'تأكيد وإرسال',
     'preview.blocking': 'أكمل الحقول الحمراء المطلوبة قبل الإرسال.',
@@ -421,7 +627,7 @@ class ScanTexts {
     'supplier.autoMatched.label': 'تمت المطابقة تلقائياً',
     'supplier.autoMatched.note': 'المورد موجود بالفعل في قاعدة البيانات.',
     'supplier.needsChoice.label': 'يلزم اختيار',
-    'supplier.needsChoice.note': 'هناك عدة موردين مشابهين لنتيجة OCR.',
+    'supplier.needsChoice.note': 'يوجد عدة موردين مطابقين للمعلومات المستخرجة.',
     'supplier.notFound.label': 'غير موجود',
     'supplier.notFound.note': 'لم يتم العثور على مورد مطابق.',
     'supplier.created.label': 'تم الإنشاء',

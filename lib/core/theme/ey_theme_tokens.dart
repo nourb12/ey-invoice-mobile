@@ -59,6 +59,9 @@ class EyThemeTokens extends ThemeExtension<EyThemeTokens> {
   final Color warn;
   final Color error;
   final Color info;
+  Color get okText => bgCard.computeLuminance() > .5 ? const Color(0xFF15803D) : ok;
+  Color get warnText => bgCard.computeLuminance() > .5 ? const Color(0xFFB45309) : warn;
+  Color get errorText => bgCard.computeLuminance() > .5 ? const Color(0xFFB91C1C) : error;
   final Color bgVoid;
   final Color bgAbyss;
   final Color bgSurf;
@@ -113,8 +116,8 @@ class EyThemeTokens extends ThemeExtension<EyThemeTokens> {
     border2: Color.fromRGBO(0, 0, 0, .11),
     border3: Color.fromRGBO(0, 0, 0, .18),
     textPrimary: Color(0xFF111827),
-    textSecondary: Color(0xFF6B7280),
-    textTertiary: Color(0xFF9CA3AF),
+    textSecondary: Color(0xFF4B5563),
+    textTertiary: Color(0xFF6B7280),
     textMuted: Color(0xFFD1D5DB),
     sidebarBg: Color(0xFFF5F7FB),
     sidebarBorder: Color(0xFFEDEFF5),

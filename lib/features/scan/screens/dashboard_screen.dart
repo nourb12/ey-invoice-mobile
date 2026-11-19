@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/l10n/app_texts.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/widgets/ey_components.dart';
 import '../../../core/widgets/language_picker_button.dart';
 import '../../auth/controllers/session_controller.dart';
 import '../controllers/scan_controller.dart';
 import '../models/scan_draft.dart';
+import '../l10n/scan_texts.dart';
+import 'scan_tracking_sheet.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({
@@ -29,10 +31,23 @@ class DashboardScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final session = context.watch<SessionController>();
     final scanController = context.watch<ScanController>();
-    final recentDrafts = scanController.drafts.take(3).toList();
+    final texts = AppTexts.of(context);
+    final recentDrafts = scanController.drafts
+        .where((d) => d.status != ScanDraftStatus.validated)
+        .take(3)
+        .toList();
+    final recentSent = scanController.drafts
+        .where(
+          (d) =>
+              d.status == ScanDraftStatus.validated &&
+              d.backendTransactionId != null,
+        )
+        .take(3)
+        .toList();
+    final scanTexts = ScanTexts.of(context);
     final userName = session.user?.prenom.isNotEmpty == true
-      ? session.user!.prenom
-      : 'Utilisateur';
+        ? session.user!.prenom
+        : texts.t('common.user');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
@@ -47,7 +62,12 @@ class DashboardScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Bienvenue $userName', style: textTheme.titleMedium),
+                    Text(
+                      texts
+                          .t('dashboard.welcome')
+                          .replaceFirst('{name}', userName),
+                      style: textTheme.titleMedium,
+                    ),
                   ],
                 ),
               ),
@@ -58,13 +78,13 @@ class DashboardScreen extends StatelessWidget {
                     ? Icons.light_mode_rounded
                     : Icons.dark_mode_rounded,
                 onTap: onToggleTheme,
-                tooltip: 'Changer de thème',
+                tooltip: texts.t('common.theme'),
               ),
               const SizedBox(width: 8),
               EyIconAction(
                 icon: Icons.logout_rounded,
                 onTap: () => onLogout(),
-                tooltip: 'Déconnexion',
+                tooltip: texts.t('common.logout'),
               ),
             ],
           ),
@@ -73,24 +93,24 @@ class DashboardScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const EyEyebrow(label: 'Scannez vos documents'),
+                EyEyebrow(label: texts.t('dashboard.scanDocuments')),
                 const SizedBox(height: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Gérez vos Documents',
+                      texts.t('dashboard.manageDocuments'),
                       style: textTheme.headlineMedium,
                     ),
                     Text(
-                      'Papiers Depuis Votre Mobile',
+                      texts.t('dashboard.mobileDocuments'),
                       style: textTheme.headlineMedium,
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Capturez vos documents, vérifiez les informations scannées, validez en quelques secondes.',
+                  texts.t('dashboard.description'),
                   style: textTheme.bodyMedium?.copyWith(
                     color: colors.textSecondary,
                     height: 1.6,
@@ -101,7 +121,7 @@ class DashboardScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: EyPrimaryButton(
-                        label: 'Scanner',
+                        label: texts.t('dashboard.scan'),
                         icon: Icons.document_scanner_outlined,
                         onPressed: onOpenScan,
                       ),
@@ -109,7 +129,7 @@ class DashboardScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: EySecondaryButton(
-                        label: 'Historique',
+                        label: texts.t('nav.history'),
                         icon: Icons.history_rounded,
                         onPressed: onOpenHistory,
                       ),
@@ -124,7 +144,7 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: _StatCard(
-                  label: 'Brouillons',
+                  label: texts.t('dashboard.drafts'),
                   value: scanController.reviewedCount.toString(),
                   tone: EyStatusTone.neutral,
                 ),
@@ -132,7 +152,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'Validé',
+                  label: texts.t('dashboard.validated'),
                   value: scanController.validatedCount.toString(),
                   tone: EyStatusTone.ok,
                 ),
@@ -140,7 +160,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'À revalider',
+                  label: texts.t('dashboard.recheck'),
                   value: scanController.extractedCount.toString(),
                   tone: EyStatusTone.warn,
                 ),
@@ -154,18 +174,21 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text('Derniers brouillons', style: textTheme.titleMedium),
+                    Text(
+                      texts.t('dashboard.latestDrafts'),
+                      style: textTheme.titleMedium,
+                    ),
                     const Spacer(),
                     TextButton(
                       onPressed: onOpenHistory,
-                      child: const Text('Tout voir'),
+                      child: Text(texts.t('dashboard.seeAll')),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 if (recentDrafts.isEmpty)
                   Text(
-                    'Aucun scan enregistré pour le moment.',
+                    texts.t('dashboard.noScan'),
                     style: textTheme.bodyMedium?.copyWith(
                       color: colors.textSecondary,
                     ),
@@ -183,14 +206,14 @@ class DashboardScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  draft.title,
+                                  scanTexts.draftTitle(draft),
                                   style: textTheme.bodyLarge?.copyWith(
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${draft.amountLabel} • ${DateFormat('dd/MM/yyyy HH:mm').format(draft.updatedAt)}',
+                                  '${scanTexts.draftAmount(draft)} • ${scanTexts.draftDate(draft.updatedAt)}',
                                   style: textTheme.bodySmall?.copyWith(
                                     color: colors.textSecondary,
                                   ),
@@ -199,7 +222,9 @@ class DashboardScreen extends StatelessWidget {
                             ),
                           ),
                           EyStatusChip(
-                            label: draft.status.label,
+                            label: ScanTexts.of(
+                              context,
+                            ).draftStatusLabel(draft.status),
                             tone: draft.status == ScanDraftStatus.validated
                                 ? EyStatusTone.ok
                                 : draft.status == ScanDraftStatus.reviewed
@@ -213,6 +238,28 @@ class DashboardScreen extends StatelessWidget {
               ],
             ),
           ),
+          if (recentSent.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            EySurfaceCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    texts.t('dashboard.recentSent'),
+                    style: textTheme.titleMedium,
+                  ),
+                  for (final draft in recentSent)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(scanTexts.draftTitle(draft)),
+                      subtitle: Text(scanTexts.draftAmount(draft)),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => ScanTrackingSheet.open(context, draft),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -250,7 +297,9 @@ class _StatCard extends StatelessWidget {
                 EyStatusTone.info => colors.info,
                 EyStatusTone.error => colors.error,
                 EyStatusTone.ey => colors.ey,
-                EyStatusTone.neutral => colors.textSecondary.withValues(alpha: .45),
+                EyStatusTone.neutral => colors.textSecondary.withValues(
+                  alpha: .45,
+                ),
               },
               borderRadius: BorderRadius.circular(999),
             ),

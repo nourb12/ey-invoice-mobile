@@ -21,7 +21,8 @@ abstract final class ApiConfigDev {
     }
 
     if (kIsWeb) {
-      return const <String>['localhost'];
+      final host = Uri.base.host;
+      return <String>[host.isEmpty ? 'localhost' : host];
     }
 
     if (Platform.isAndroid) {

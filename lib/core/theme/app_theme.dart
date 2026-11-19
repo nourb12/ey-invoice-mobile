@@ -4,15 +4,22 @@ import 'package:google_fonts/google_fonts.dart';
 import 'ey_theme_tokens.dart';
 
 abstract final class AppTheme {
-  static ThemeData light() =>
-      _buildTheme(brightness: Brightness.light, tokens: EyThemeTokens.light);
+  static ThemeData light({String languageCode = 'fr'}) => _buildTheme(
+    brightness: Brightness.light,
+    tokens: EyThemeTokens.light,
+    arabic: languageCode == 'ar',
+  );
 
-  static ThemeData dark() =>
-      _buildTheme(brightness: Brightness.dark, tokens: EyThemeTokens.dark);
+  static ThemeData dark({String languageCode = 'fr'}) => _buildTheme(
+    brightness: Brightness.dark,
+    tokens: EyThemeTokens.dark,
+    arabic: languageCode == 'ar',
+  );
 
   static ThemeData _buildTheme({
     required Brightness brightness,
     required EyThemeTokens tokens,
+    required bool arabic,
   }) {
     final base = ThemeData(
       brightness: brightness,
@@ -39,7 +46,7 @@ abstract final class AppTheme {
       shadowColor: tokens.shadowColor,
     );
 
-    final textTheme = GoogleFonts.dmSansTextTheme(base.textTheme).copyWith(
+    var textTheme = GoogleFonts.dmSansTextTheme(base.textTheme).copyWith(
       displaySmall: GoogleFonts.playfairDisplay(
         fontSize: 36,
         height: 1.05,
@@ -99,6 +106,23 @@ abstract final class AppTheme {
         color: tokens.textTertiary,
       ),
     );
+
+    if (arabic) {
+      textTheme = GoogleFonts.cairoTextTheme(textTheme).copyWith(
+        headlineMedium: GoogleFonts.cairo(
+          textStyle: textTheme.headlineMedium,
+          height: 1.5,
+        ),
+        headlineSmall: GoogleFonts.cairo(
+          textStyle: textTheme.headlineSmall,
+          height: 1.5,
+        ),
+        bodyMedium: GoogleFonts.cairo(
+          textStyle: textTheme.bodyMedium,
+          height: 1.5,
+        ),
+      );
+    }
 
     return base.copyWith(
       textTheme: textTheme,

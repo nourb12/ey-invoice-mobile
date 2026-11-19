@@ -23,6 +23,76 @@ class AppTexts {
 
   // French translations
   static const Map<String, String> _fr = <String, String>{
+    'alerts.title': 'Notifications',
+    'alerts.readAll': 'Tout marquer comme lu',
+    'alerts.error':
+        'Actualisation impossible. Les dernières informations enregistrées restent affichées.',
+    'alerts.empty': 'Aucune notification pour le moment.',
+    'alerts.correction': 'Un document nécessite une correction',
+    'alerts.pending': 'Document en attente de vérification',
+    'alerts.reviewed': 'Votre justificatif a été validé',
+    'login.failed':
+        'Connexion impossible. Vérifiez vos identifiants et votre connexion, puis réessayez.',
+    'otp.failed':
+        'Vérification impossible. Utilisez le code actuel de votre application de sécurité et vérifiez votre connexion.',
+    'history.period': 'Période',
+    'history.allDates': 'Toutes les dates',
+    'history.days': '{count} derniers jours',
+    'history.type': 'Type de document',
+    'history.allTypes': 'Tous les documents',
+    'history.deleted': 'Document retiré de cet appareil.',
+    'history.undo': 'Rétablir',
+    'preview.saveError':
+        'Le brouillon n’a pas pu être enregistré. Restez sur cette page et réessayez.',
+    'history.queued': '{count} envoi(s) en attente de connexion',
+    'history.pendingSend':
+        'Envoi en attente — reprise automatique dans l’application',
+    'login.forgotPassword': 'Mot de passe oublié ?',
+    'preview.image': 'Aperçu du document',
+    'preview.reviewFields': 'Informations à vérifier',
+    'preview.goodFields': 'Informations reconnues',
+    'preview.quality':
+        'La photo peut être difficile à lire. Vérifiez les informations ou reprenez-la.',
+    'preview.retake': 'Reprendre la photo',
+    'dashboard.recentSent': 'Envoyés récemment',
+    'check.duplicate':
+        'Un document du même fournisseur avec cette référence semble déjà envoyé. Vérifiez l’historique avant de continuer.',
+    'preview.confirmField': 'Confirmer cette information',
+    'check.date': 'La date indiquée n’est pas valide.',
+    'history.readQuality': 'lecture',
+    'tracking.title': 'Suivi du document',
+    'tracking.missing': 'Justificatif à compléter',
+    'tracking.pending': 'En attente de vérification',
+    'tracking.reviewed': 'Justificatif validé',
+    'tracking.unknown': 'État non disponible',
+    'tracking.activity': 'Activité récente',
+    'tracking.noActivity': 'Aucune activité disponible.',
+    'tracking.recorded':
+        'Document enregistré. Le suivi détaillé est disponible sur le portail.',
+    'tracking.error':
+        'Le suivi est indisponible. Vérifiez votre connexion puis actualisez.',
+    'scan.importPdf': 'Importer un PDF',
+    'check.title': 'Vérifiez ces informations',
+    'check.total': 'Le total ne correspond pas aux montants indiqués.',
+    'check.future': 'La date du document est dans le futur.',
+    'check.due': 'L’échéance précède la date du document.',
+    'check.taxId': 'Le format du matricule fiscal est à vérifier.',
+    'assistant.title': 'Assistant TuniFlow',
+    'assistant.greeting':
+        'Bonjour ! Comment puis-je vous aider à utiliser TuniFlow ?',
+    'assistant.sources': 'Sources de la réponse',
+    'assistant.retry': 'La réponse n’a pas pu être chargée. Réessayer',
+    'assistant.question': 'Posez votre question…',
+    'assistant.send': 'Envoyer',
+    'session.logoutConfirm': 'Voulez-vous vous déconnecter ?',
+    'common.user': 'Utilisateur',
+    'history.search': 'Rechercher fournisseur, référence ou montant',
+    'history.all': 'Tous',
+    'history.unsent': 'À terminer',
+    'history.sent': 'Envoyés',
+    'preview.leave': 'Enregistrer avant de quitter ?',
+    'preview.stay': 'Rester',
+    'preview.discard': 'Quitter',
     // Common
     'common.save': 'Enregistrer',
     'common.cancel': 'Annuler',
@@ -33,15 +103,16 @@ class AppTexts {
     'common.success': 'Opération réussie',
     'common.close': 'Fermer',
     'common.confirm': 'Confirmer',
-    
+
     // App
     'app.name': 'EY Invoice Mobile',
-    'app.tagline': 'Facturation électronique certifiée',
-    
+    'app.tagline': 'Vos factures, simplement',
+
     // Splash
     'splash.title': 'EY Invoice Mobile',
-    'splash.subtitle': 'Initialisation du thème, de la session et des brouillons locaux.',
-    
+    'splash.subtitle':
+        'Initialisation du thème, de la session et des brouillons locaux.',
+
     // Login
     'login.eyebrow': 'Portail mobile',
     'login.title1': 'Encore des Documents !',
@@ -54,13 +125,25 @@ class AppTexts {
     'login.error': 'Renseigne ton email et ton mot de passe.',
     'login.tuniflow': 'TuniFlow',
     'login.loginLabel': 'Login',
-    
+
     // OTP
     'otp.title': 'Code de vérification',
     'otp.subtitle': 'Entrez le code à 6 chiffres',
     'otp.submit': 'Vérifier',
     'otp.resend': 'Renvoyer le code',
-    
+    'otp.twoFactor': 'Double authentification',
+    'otp.securityStep': 'Étape de sécurité',
+    'otp.instruction':
+        'Saisissez le code affiché dans votre application de sécurité.',
+    'otp.description': 'Confirmez votre identité pour protéger votre compte.',
+    'otp.code': 'Code de vérification',
+    'otp.tip': 'Astuce : garde le code au format numérique sur 6 chiffres.',
+    'otp.validate': 'Valider le code',
+    'otp.backToLogin': 'Retour à la connexion',
+    'otp.invalid': 'Le code doit contenir 6 chiffres.',
+    'otp.sessionMissing':
+        'La vérification a expiré. Reconnectez-vous pour recevoir un nouveau code.',
+
     // Navigation
     'nav.home': 'Accueil',
     'nav.scan': 'Scanner',
@@ -71,23 +154,171 @@ class AppTexts {
     // Portal
     'portal.eyebrow': 'Portail web',
     'portal.scannedInvoicesTitle': 'Factures scannees',
-    'portal.scannedInvoicesSubtitle': 'Ouvre le dashboard web pour confirmer, signer et suivre les documents envoyes depuis le mobile.',
+    'portal.scannedInvoicesSubtitle':
+        'Ouvre le dashboard web pour confirmer, signer et suivre les documents envoyes depuis le mobile.',
     'portal.openScannedInvoices': 'Ouvrir les factures scannees',
-    
+    'portal.openError': 'Impossible d’ouvrir le portail web.',
+
     // Theme
     'theme.toggle': 'Changer de thème',
     'theme.light': 'Thème clair',
     'theme.dark': 'Thème sombre',
-    
+
     // Language
     'language.change': 'Changer de langue',
     'language.french': 'Français',
     'language.english': 'English',
     'language.arabic': 'العربية',
+
+    // Dashboard & scan history
+    'dashboard.welcome': 'Bienvenue {name}',
+    'dashboard.scanDocuments': 'Scannez vos documents',
+    'dashboard.manageDocuments': 'Gérez vos documents',
+    'dashboard.mobileDocuments': 'Papiers depuis votre mobile',
+    'dashboard.description':
+        'Capturez vos documents, vérifiez les informations scannées, validez en quelques secondes.',
+    'dashboard.scan': 'Scanner',
+    'dashboard.drafts': 'Brouillons',
+    'dashboard.validated': 'Validé',
+    'dashboard.recheck': 'À revalider',
+    'dashboard.latestDrafts': 'Derniers brouillons',
+    'dashboard.seeAll': 'Tout voir',
+    'dashboard.noScan': 'Aucun scan enregistré pour le moment.',
+    'common.theme': 'Changer de thème', 'common.logout': 'Déconnexion',
+    'history.title': 'Historique des scans',
+    'history.subtitle':
+        'Documents enregistrés sur cet appareil pour votre compte.',
+    'history.emptyTitle': 'Aucun brouillon',
+    'history.emptyBody':
+        'Retrouvez ici vos documents et les informations reconnues.',
+    'history.deleteTitle': 'Retirer de cet appareil ?',
+    'history.deleteBody':
+        'Le document "{title}" sera retiré de cet appareil. Le document déjà envoyé au portail ne sera pas supprimé.',
+
+    // Invoices
+    'invoice.listTitle': 'Factures',
+    'invoice.listSubtitle': 'Retrouvez les factures de votre entreprise',
+    'invoice.refresh': 'Actualiser',
+    'invoice.new': 'Nouvelle facture',
+    'invoice.total': 'Total',
+    'invoice.paid': 'Payées',
+    'invoice.pending': 'En attente',
+    'invoice.search': 'Rechercher',
+    'invoice.searchHint': 'Numéro, client, statut...',
+    'invoice.connectionError': 'Erreur de connexion',
+    'invoice.retry': 'Réessayer', 'invoice.emptyTitle': 'Aucune facture',
+    'invoice.emptySearch': 'Aucun résultat pour "{query}"',
+    'invoice.empty': 'Aucune facture trouvée.',
+    'invoice.deleteTitle': 'Supprimer la facture ?',
+    'invoice.deleteBody':
+        'La facture "{number}" sera définitivement supprimée.',
+    'invoice.deleted': 'Facture supprimée avec succès',
+    'invoice.deleteError': 'Erreur lors de la suppression',
+    'invoice.loadError':
+        'Impossible de charger les factures. Vérifiez votre connexion puis réessayez.',
+    'invoice.saveError': 'Impossible d’enregistrer la facture. Réessayez.',
+    'invoice.details': 'Détails de la facture',
+    'invoice.back': 'Retour',
+    'invoice.client': 'Client',
+    'invoice.amount': 'Montant',
+    'invoice.issueDate': 'Date d’émission',
+    'invoice.dueDate': 'Date d’échéance',
+    'invoice.description': 'Description',
+    'invoice.system': 'Informations système',
+    'invoice.currency': 'Devise',
+    'invoice.status': 'Statut',
+    'invoice.edit': 'Modifier la facture',
+    'invoice.general': 'Informations générales',
+    'invoice.number': 'Numéro de facture',
+    'invoice.numberRequired': 'Le numéro est requis',
+    'invoice.clientName': 'Nom du client',
+    'invoice.clientRequired': 'Le nom du client est requis',
+    'invoice.amountRequired': 'Le montant est requis',
+    'invoice.amountInvalid': 'Montant invalide',
+    'invoice.dueDateOptional': 'Date d’échéance (optionnel)',
+    'invoice.notSet': 'Non définie',
+    'invoice.descriptionOptional': 'Description (optionnel)',
+    'invoice.descriptionHint': 'Détails supplémentaires...',
+    'invoice.update': 'Mettre à jour',
+    'invoice.create': 'Créer la facture',
+    'invoice.updated': 'Facture mise à jour avec succès',
+    'invoice.created': 'Facture créée avec succès',
+    'invoice.status.PAID': 'Payée',
+    'invoice.status.PENDING': 'En attente',
+    'invoice.status.OVERDUE': 'En retard',
+    'invoice.status.CANCELLED': 'Annulée',
   };
 
   // English translations
   static const Map<String, String> _en = <String, String>{
+    'alerts.title': 'Notifications',
+    'alerts.readAll': 'Mark all as read',
+    'alerts.error':
+        'Unable to refresh. Previously saved information is still displayed.',
+    'alerts.empty': 'No notifications yet.',
+    'alerts.correction': 'A document needs correction',
+    'alerts.pending': 'Document awaiting review',
+    'alerts.reviewed': 'Your receipt has been approved',
+    'login.failed':
+        'Unable to sign in. Check your credentials and connection, then retry.',
+    'otp.failed':
+        'Unable to verify. Use the current code from your security application and check your connection.',
+    'history.period': 'Period',
+    'history.allDates': 'All dates',
+    'history.days': 'Last {count} days',
+    'history.type': 'Document type',
+    'history.allTypes': 'All documents',
+    'history.deleted': 'Document removed from this device.',
+    'history.undo': 'Restore',
+    'preview.saveError':
+        'The draft could not be saved. Stay on this page and try again.',
+    'history.queued': '{count} submission(s) waiting for connection',
+    'history.pendingSend': 'Waiting to send — automatically retries in the app',
+    'login.forgotPassword': 'Forgot password?',
+    'preview.image': 'Document preview',
+    'preview.reviewFields': 'Information to check',
+    'preview.goodFields': 'Recognized information',
+    'preview.quality':
+        'This photo may be difficult to read. Check the information or take it again.',
+    'preview.retake': 'Retake photo',
+    'dashboard.recentSent': 'Recently sent',
+    'check.duplicate':
+        'A document from this supplier with this reference appears to have been sent. Check the history before continuing.',
+    'preview.confirmField': 'Confirm this information',
+    'check.date': 'The date entered is not valid.',
+    'history.readQuality': 'recognition',
+    'tracking.title': 'Document tracking',
+    'tracking.missing': 'Receipt needs information',
+    'tracking.pending': 'Awaiting review',
+    'tracking.reviewed': 'Receipt approved',
+    'tracking.unknown': 'Status unavailable',
+    'tracking.activity': 'Recent activity',
+    'tracking.noActivity': 'No activity available.',
+    'tracking.recorded':
+        'Document saved. Detailed tracking is available on the portal.',
+    'tracking.error':
+        'Tracking unavailable. Check your connection and refresh.',
+    'scan.importPdf': 'Import a PDF',
+    'check.title': 'Check this information',
+    'check.total': 'The total does not match the amounts entered.',
+    'check.future': 'The document date is in the future.',
+    'check.due': 'The due date is before the document date.',
+    'check.taxId': 'Please check the tax identifier format.',
+    'assistant.title': 'TuniFlow Assistant',
+    'assistant.greeting': 'Hello! How can I help you use TuniFlow?',
+    'assistant.sources': 'Answer sources',
+    'assistant.retry': 'The answer could not be loaded. Try again',
+    'assistant.question': 'Ask a question…',
+    'assistant.send': 'Send',
+    'session.logoutConfirm': 'Do you want to sign out?',
+    'common.user': 'User',
+    'history.search': 'Search supplier, reference or amount',
+    'history.all': 'All',
+    'history.unsent': 'To complete',
+    'history.sent': 'Sent',
+    'preview.leave': 'Save before leaving?',
+    'preview.stay': 'Stay',
+    'preview.discard': 'Leave',
     // Common
     'common.save': 'Save',
     'common.cancel': 'Cancel',
@@ -98,15 +329,15 @@ class AppTexts {
     'common.success': 'Operation successful',
     'common.close': 'Close',
     'common.confirm': 'Confirm',
-    
+
     // App
     'app.name': 'EY Invoice Mobile',
     'app.tagline': 'Certified electronic invoicing',
-    
+
     // Splash
     'splash.title': 'EY Invoice Mobile',
     'splash.subtitle': 'Initializing theme, session and local drafts.',
-    
+
     // Login
     'login.eyebrow': 'Mobile portal',
     'login.title1': 'More Documents!',
@@ -119,13 +350,22 @@ class AppTexts {
     'login.error': 'Enter your email and password.',
     'login.tuniflow': 'TuniFlow',
     'login.loginLabel': 'Login',
-    
+
     // OTP
     'otp.title': 'Verification code',
     'otp.subtitle': 'Enter the 6-digit code',
     'otp.submit': 'Verify',
     'otp.resend': 'Resend code',
-    
+    'otp.twoFactor': 'Two-factor authentication',
+    'otp.securityStep': 'Security step',
+    'otp.instruction': 'Enter the code shown in your security application.',
+    'otp.description': 'Confirm your identity to protect your account.',
+    'otp.code': 'Verification code',
+    'otp.tip': 'Tip: keep the code in a 6-digit numeric format.',
+    'otp.validate': 'Validate code', 'otp.backToLogin': 'Back to sign in',
+    'otp.invalid': 'The code must contain 6 digits.',
+    'otp.sessionMissing': 'Verification expired. Sign in again to get a new code.',
+
     // Navigation
     'nav.home': 'Home',
     'nav.scan': 'Scan',
@@ -136,23 +376,164 @@ class AppTexts {
     // Portal
     'portal.eyebrow': 'Web portal',
     'portal.scannedInvoicesTitle': 'Scanned invoices',
-    'portal.scannedInvoicesSubtitle': 'Open the web dashboard to confirm, sign and track documents sent from mobile.',
+    'portal.scannedInvoicesSubtitle':
+        'Open the web dashboard to confirm, sign and track documents sent from mobile.',
     'portal.openScannedInvoices': 'Open scanned invoices',
-    
+    'portal.openError': 'Unable to open the web portal.',
+
     // Theme
     'theme.toggle': 'Change theme',
     'theme.light': 'Light theme',
     'theme.dark': 'Dark theme',
-    
+
     // Language
     'language.change': 'Change language',
     'language.french': 'Français',
     'language.english': 'English',
     'language.arabic': 'العربية',
+
+    'dashboard.welcome': 'Welcome {name}',
+    'dashboard.scanDocuments': 'Scan your documents',
+    'dashboard.manageDocuments': 'Manage your documents',
+    'dashboard.mobileDocuments': 'From your mobile',
+    'dashboard.description':
+        'Capture documents, review scanned information and validate in seconds.',
+    'dashboard.scan': 'Scan',
+    'dashboard.drafts': 'Drafts',
+    'dashboard.validated': 'Validated',
+    'dashboard.recheck': 'To review',
+    'dashboard.latestDrafts': 'Latest drafts',
+    'dashboard.seeAll': 'See all',
+    'dashboard.noScan': 'No scan saved yet.',
+    'common.theme': 'Change theme', 'common.logout': 'Sign out',
+    'history.title': 'Scan history',
+    'history.subtitle':
+        'All drafts stay on your phone until they are validated.',
+    'history.emptyTitle': 'No draft',
+    'history.emptyBody': 'Find your documents and recognized information here.',
+    'history.deleteTitle': 'Remove from this device?',
+    'history.deleteBody':
+        'The document "{title}" will be removed from this device. A document already sent to the portal will not be deleted.',
+    'invoice.listTitle': 'Invoices',
+    'invoice.listSubtitle': 'Your company invoices',
+    'invoice.refresh': 'Refresh',
+    'invoice.new': 'New invoice',
+    'invoice.total': 'Total',
+    'invoice.paid': 'Paid',
+    'invoice.pending': 'Pending',
+    'invoice.search': 'Search',
+    'invoice.searchHint': 'Number, customer, status...',
+    'invoice.connectionError': 'Connection error',
+    'invoice.retry': 'Retry',
+    'invoice.emptyTitle': 'No invoice',
+    'invoice.emptySearch': 'No result for "{query}"',
+    'invoice.empty': 'No invoice found.',
+    'invoice.deleteTitle': 'Delete invoice?',
+    'invoice.deleteBody': 'Invoice "{number}" will be permanently deleted.',
+    'invoice.deleted': 'Invoice deleted successfully',
+    'invoice.deleteError': 'Could not delete the invoice',
+    'invoice.loadError':
+        'Unable to load invoices. Check your connection and try again.',
+    'invoice.saveError': 'Unable to save the invoice. Please try again.',
+    'invoice.details': 'Invoice details',
+    'invoice.back': 'Back',
+    'invoice.client': 'Customer',
+    'invoice.amount': 'Amount',
+    'invoice.issueDate': 'Issue date',
+    'invoice.dueDate': 'Due date',
+    'invoice.description': 'Description',
+    'invoice.system': 'System information',
+    'invoice.currency': 'Currency',
+    'invoice.status': 'Status',
+    'invoice.edit': 'Edit invoice',
+    'invoice.general': 'General information',
+    'invoice.number': 'Invoice number',
+    'invoice.numberRequired': 'Invoice number is required',
+    'invoice.clientName': 'Customer name',
+    'invoice.clientRequired': 'Customer name is required',
+    'invoice.amountRequired': 'Amount is required',
+    'invoice.amountInvalid': 'Invalid amount',
+    'invoice.dueDateOptional': 'Due date (optional)',
+    'invoice.notSet': 'Not set',
+    'invoice.descriptionOptional': 'Description (optional)',
+    'invoice.descriptionHint': 'Additional details...',
+    'invoice.update': 'Update',
+    'invoice.create': 'Create invoice',
+    'invoice.updated': 'Invoice updated successfully',
+    'invoice.created': 'Invoice created successfully',
+    'invoice.status.PAID': 'Paid',
+    'invoice.status.PENDING': 'Pending',
+    'invoice.status.OVERDUE': 'Overdue',
+    'invoice.status.CANCELLED': 'Cancelled',
   };
 
   // Arabic translations
   static const Map<String, String> _ar = <String, String>{
+    'alerts.title': 'الإشعارات',
+    'alerts.readAll': 'تحديد الكل كمقروء',
+    'alerts.error': 'تعذر التحديث. تبقى المعلومات المحفوظة ظاهرة.',
+    'alerts.empty': 'لا توجد إشعارات حالياً.',
+    'alerts.correction': 'يوجد مستند يحتاج إلى تصحيح',
+    'alerts.pending': 'مستند في انتظار المراجعة',
+    'alerts.reviewed': 'تمت المصادقة على مستندك',
+    'login.failed':
+        'تعذر تسجيل الدخول. تحقق من بيانات الدخول والاتصال ثم حاول مجدداً.',
+    'otp.failed':
+        'تعذر التحقق. استخدم الرمز الحالي من تطبيق الأمان وتحقق من الاتصال.',
+    'history.period': 'الفترة',
+    'history.allDates': 'كل التواريخ',
+    'history.days': 'آخر {count} يوماً',
+    'history.type': 'نوع المستند',
+    'history.allTypes': 'كل المستندات',
+    'history.deleted': 'تمت إزالة المستند من هذا الجهاز.',
+    'history.undo': 'استعادة',
+    'preview.saveError': 'تعذر حفظ المسودة. ابق في هذه الصفحة وأعد المحاولة.',
+    'history.queued': '{count} مستندات في انتظار الاتصال للإرسال',
+    'history.pendingSend':
+        'في انتظار الإرسال — إعادة المحاولة تلقائياً داخل التطبيق',
+    'login.forgotPassword': 'نسيت كلمة المرور؟',
+    'preview.image': 'معاينة المستند',
+    'preview.reviewFields': 'معلومات للمراجعة',
+    'preview.goodFields': 'معلومات تمت قراءتها',
+    'preview.quality':
+        'قد تكون الصورة صعبة القراءة. راجع المعلومات أو التقط صورة أخرى.',
+    'preview.retake': 'إعادة التقاط الصورة',
+    'dashboard.recentSent': 'المستندات المرسلة مؤخراً',
+    'check.duplicate':
+        'يبدو أنه تم إرسال مستند من هذا المورد بالمرجع نفسه. راجع السجل قبل المتابعة.',
+    'preview.confirmField': 'تأكيد هذه المعلومة',
+    'check.date': 'التاريخ المدخل غير صالح.',
+    'history.readQuality': 'قراءة',
+    'tracking.title': 'متابعة المستند',
+    'tracking.missing': 'الإثبات يحتاج إلى استكمال',
+    'tracking.pending': 'في انتظار المراجعة',
+    'tracking.reviewed': 'تمت الموافقة على الإثبات',
+    'tracking.unknown': 'الحالة غير متاحة',
+    'tracking.activity': 'النشاط الأخير',
+    'tracking.noActivity': 'لا يوجد نشاط متاح.',
+    'tracking.recorded': 'تم حفظ المستند. المتابعة المفصلة متاحة في البوابة.',
+    'tracking.error': 'المتابعة غير متاحة. تحقق من الاتصال ثم حدّث الصفحة.',
+    'scan.importPdf': 'استيراد PDF',
+    'check.title': 'راجع هذه المعلومات',
+    'check.total': 'الإجمالي لا يطابق المبالغ المدخلة.',
+    'check.future': 'تاريخ المستند في المستقبل.',
+    'check.due': 'تاريخ الاستحقاق يسبق تاريخ المستند.',
+    'check.taxId': 'يرجى التحقق من صيغة المعرف الجبائي.',
+    'assistant.title': 'مساعد TuniFlow',
+    'assistant.greeting': 'مرحباً! كيف يمكنني مساعدتك في استخدام TuniFlow؟',
+    'assistant.sources': 'مصادر الإجابة',
+    'assistant.retry': 'تعذر تحميل الإجابة. حاول مجدداً',
+    'assistant.question': 'اطرح سؤالك…',
+    'assistant.send': 'إرسال',
+    'session.logoutConfirm': 'هل تريد تسجيل الخروج؟',
+    'common.user': 'مستخدم',
+    'history.search': 'ابحث عن المورد أو المرجع أو المبلغ',
+    'history.all': 'الكل',
+    'history.unsent': 'للإكمال',
+    'history.sent': 'المرسلة',
+    'preview.leave': 'هل تريد الحفظ قبل المغادرة؟',
+    'preview.stay': 'البقاء',
+    'preview.discard': 'المغادرة',
     // Common
     'common.save': 'حفظ',
     'common.cancel': 'إلغاء',
@@ -163,15 +544,15 @@ class AppTexts {
     'common.success': 'تمت العملية بنجاح',
     'common.close': 'إغلاق',
     'common.confirm': 'تأكيد',
-    
+
     // App
     'app.name': 'EY Invoice Mobile',
     'app.tagline': 'الفوترة الإلكترونية المعتمدة',
-    
+
     // Splash
     'splash.title': 'EY Invoice Mobile',
     'splash.subtitle': 'جارٍ تهيئة السمة والجلسة والمسودات المحلية.',
-    
+
     // Login
     'login.eyebrow': 'البوابة المحمولة',
     'login.title1': 'المزيد من المستندات!',
@@ -184,35 +565,117 @@ class AppTexts {
     'login.error': 'أدخل بريدك الإلكتروني وكلمة المرور.',
     'login.tuniflow': 'TuniFlow',
     'login.loginLabel': 'تسجيل الدخول',
-    
+
     // OTP
     'otp.title': 'رمز التحقق',
     'otp.subtitle': 'أدخل الرمز المكون من 6 أرقام',
     'otp.submit': 'تحقق',
     'otp.resend': 'إعادة إرسال الرمز',
-    
+    'otp.twoFactor': 'المصادقة الثنائية', 'otp.securityStep': 'خطوة الأمان',
+    'otp.instruction': 'أدخل الرمز الذي أنشأه تطبيق المصادقة الثنائية.',
+    'otp.description': 'يتطلب الخادم هذا التحقق بعد كلمة المرور.',
+    'otp.code': 'رمز المصادقة الثنائية',
+    'otp.tip': 'نصيحة: استخدم رمزاً رقمياً من 6 أرقام.',
+    'otp.validate': 'تأكيد الرمز', 'otp.backToLogin': 'العودة إلى تسجيل الدخول',
+    'otp.invalid': 'يجب أن يحتوي رمز المصادقة الثنائية على 6 أرقام.',
+    'otp.sessionMissing': 'انتهت صلاحية التحقق. سجّل الدخول مجدداً للحصول على رمز جديد.',
+
     // Navigation
     'nav.home': 'الرئيسية',
     'nav.scan': 'مسح',
     'nav.history': 'السجل',
     'nav.invoices': 'الفواتير',
-    'nav.scannedInvoices': 'Factures web',
+    'nav.scannedInvoices': 'فواتير الويب',
 
     // Portal
-    'portal.eyebrow': 'Portail web',
-    'portal.scannedInvoicesTitle': 'Factures scannees',
-    'portal.scannedInvoicesSubtitle': 'Ouvre le dashboard web pour confirmer, signer et suivre les documents envoyes depuis le mobile.',
-    'portal.openScannedInvoices': 'Ouvrir les factures scannees',
-    
+    'portal.eyebrow': 'بوابة الويب',
+    'portal.scannedInvoicesTitle': 'الفواتير الممسوحة',
+    'portal.scannedInvoicesSubtitle':
+        'افتح لوحة الويب لتأكيد المستندات المرسلة من الجوال وتوقيعها ومتابعتها.',
+    'portal.openScannedInvoices': 'فتح الفواتير الممسوحة',
+    'portal.openError': 'تعذر فتح بوابة الويب.',
+
     // Theme
     'theme.toggle': 'تغيير السمة',
     'theme.light': 'السمة الفاتحة',
     'theme.dark': 'السمة الداكنة',
-    
+
     // Language
     'language.change': 'تغيير اللغة',
     'language.french': 'Français',
     'language.english': 'English',
     'language.arabic': 'العربية',
+
+    'dashboard.welcome': 'مرحباً {name}',
+    'dashboard.scanDocuments': 'امسح مستنداتك',
+    'dashboard.manageDocuments': 'أدر مستنداتك',
+    'dashboard.mobileDocuments': 'من هاتفك المحمول',
+    'dashboard.description':
+        'التقط مستنداتك، وراجع المعلومات الممسوحة، ثم أكدها خلال ثوانٍ.',
+    'dashboard.scan': 'مسح',
+    'dashboard.drafts': 'مسودات',
+    'dashboard.validated': 'تم التأكيد',
+    'dashboard.recheck': 'للمراجعة',
+    'dashboard.latestDrafts': 'أحدث المسودات',
+    'dashboard.seeAll': 'عرض الكل',
+    'dashboard.noScan': 'لا توجد عمليات مسح محفوظة بعد.',
+    'common.theme': 'تغيير السمة', 'common.logout': 'تسجيل الخروج',
+    'history.title': 'سجل المسح',
+    'history.subtitle': 'تُحفظ جميع المسودات على هاتفك حتى يتم تأكيدها.',
+    'history.emptyTitle': 'لا توجد مسودة',
+    'history.emptyBody': 'تجد هنا مستنداتك والمعلومات المستخرجة منها.',
+    'history.deleteTitle': 'إزالة من هذا الجهاز؟',
+    'history.deleteBody':
+        'ستتم إزالة المستند "{title}" من هذا الجهاز فقط. لن يتم حذف المستند المرسل إلى البوابة.',
+    'invoice.listTitle': 'الفواتير',
+    'invoice.listSubtitle': 'القائمة الكاملة من واجهة البرمجة',
+    'invoice.refresh': 'تحديث',
+    'invoice.new': 'فاتورة جديدة',
+    'invoice.total': 'الإجمالي',
+    'invoice.paid': 'مدفوعة',
+    'invoice.pending': 'قيد الانتظار',
+    'invoice.search': 'بحث',
+    'invoice.searchHint': 'رقم، عميل، حالة...',
+    'invoice.connectionError': 'خطأ في الاتصال',
+    'invoice.retry': 'إعادة المحاولة',
+    'invoice.emptyTitle': 'لا توجد فاتورة',
+    'invoice.emptySearch': 'لا نتائج لـ "{query}"',
+    'invoice.empty': 'لم يتم العثور على فواتير في الخادم.',
+    'invoice.deleteTitle': 'حذف الفاتورة؟',
+    'invoice.deleteBody': 'سيتم حذف الفاتورة "{number}" نهائياً من الخادم.',
+    'invoice.deleted': 'تم حذف الفاتورة بنجاح',
+    'invoice.deleteError': 'تعذر حذف الفاتورة',
+    'invoice.loadError': 'تعذر تحميل الفواتير. تحقق من الاتصال وحاول مجدداً.',
+    'invoice.saveError': 'تعذر حفظ الفاتورة. حاول مجدداً.',
+    'invoice.details': 'تفاصيل الفاتورة',
+    'invoice.back': 'رجوع',
+    'invoice.client': 'العميل',
+    'invoice.amount': 'المبلغ',
+    'invoice.issueDate': 'تاريخ الإصدار',
+    'invoice.dueDate': 'تاريخ الاستحقاق',
+    'invoice.description': 'الوصف',
+    'invoice.system': 'معلومات النظام',
+    'invoice.currency': 'العملة',
+    'invoice.status': 'الحالة',
+    'invoice.edit': 'تعديل الفاتورة',
+    'invoice.general': 'معلومات عامة',
+    'invoice.number': 'رقم الفاتورة',
+    'invoice.numberRequired': 'رقم الفاتورة مطلوب',
+    'invoice.clientName': 'اسم العميل',
+    'invoice.clientRequired': 'اسم العميل مطلوب',
+    'invoice.amountRequired': 'المبلغ مطلوب',
+    'invoice.amountInvalid': 'المبلغ غير صالح',
+    'invoice.dueDateOptional': 'تاريخ الاستحقاق (اختياري)',
+    'invoice.notSet': 'غير محدد',
+    'invoice.descriptionOptional': 'الوصف (اختياري)',
+    'invoice.descriptionHint': 'تفاصيل إضافية...',
+    'invoice.update': 'تحديث',
+    'invoice.create': 'إنشاء الفاتورة',
+    'invoice.updated': 'تم تحديث الفاتورة بنجاح',
+    'invoice.created': 'تم إنشاء الفاتورة بنجاح',
+    'invoice.status.PAID': 'مدفوعة',
+    'invoice.status.PENDING': 'قيد الانتظار',
+    'invoice.status.OVERDUE': 'متأخرة',
+    'invoice.status.CANCELLED': 'ملغاة',
   };
 }

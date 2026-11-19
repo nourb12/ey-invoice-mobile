@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/l10n/app_texts.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/widgets/ey_background.dart';
 import '../../../core/widgets/ey_components.dart';
@@ -109,15 +110,17 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
         SnackBar(
           content: Text(
             isEditing
-                ? 'Facture mise à jour avec succès'
-                : 'Facture créée avec succès',
+                ? AppTexts.of(context).t('invoice.updated')
+                : AppTexts.of(context).t('invoice.created'),
           ),
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(controller.errorMessage ?? 'Une erreur est survenue'),
+          content: Text(
+            AppTexts.of(context).t(controller.errorKey ?? 'common.error'),
+          ),
           backgroundColor: context.ey.error,
         ),
       );
@@ -129,6 +132,7 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
     final colors = context.ey;
     final textTheme = Theme.of(context).textTheme;
     final controller = context.watch<InvoicesController>();
+    final texts = AppTexts.of(context);
 
     return Scaffold(
       backgroundColor: colors.pageBg,
@@ -145,12 +149,14 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                     EyIconAction(
                       icon: Icons.close_rounded,
                       onTap: () => Navigator.of(context).pop(),
-                      tooltip: 'Fermer',
+                      tooltip: texts.t('common.close'),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        isEditing ? 'Modifier la facture' : 'Nouvelle facture',
+                        isEditing
+                            ? texts.t('invoice.edit')
+                            : texts.t('invoice.new'),
                         style: textTheme.titleMedium,
                       ),
                     ),
@@ -171,23 +177,23 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const EyEyebrow(label: 'Informations générales'),
+                              EyEyebrow(label: texts.t('invoice.general')),
                               const SizedBox(height: 16),
                               EyTextField(
-                                label: 'Numéro de facture',
+                                label: texts.t('invoice.number'),
                                 controller: _invoiceNumberController,
                                 hint: 'INV-2026-001',
                                 prefixIcon: const Icon(Icons.tag_rounded),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Le numéro est requis';
+                                    return texts.t('invoice.numberRequired');
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: 14),
                               EyTextField(
-                                label: 'Nom du client',
+                                label: texts.t('invoice.clientName'),
                                 controller: _clientNameController,
                                 hint: 'Entreprise ABC',
                                 prefixIcon: const Icon(
@@ -195,14 +201,14 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                 ),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Le nom du client est requis';
+                                    return texts.t('invoice.clientRequired');
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: 14),
                               EyTextField(
-                                label: 'Montant',
+                                label: texts.t('invoice.amount'),
                                 controller: _amountController,
                                 hint: '1500.000',
                                 keyboardType:
@@ -217,18 +223,18 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                 ],
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Le montant est requis';
+                                    return texts.t('invoice.amountRequired');
                                   }
                                   final amount = double.tryParse(value.trim());
                                   if (amount == null || amount <= 0) {
-                                    return 'Montant invalide';
+                                    return texts.t('invoice.amountInvalid');
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: 14),
                               Text(
-                                'Devise',
+                                texts.t('invoice.currency'),
                                 style: textTheme.labelMedium?.copyWith(
                                   color: colors.textSecondary,
                                 ),
@@ -263,7 +269,7 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                               ),
                               const SizedBox(height: 14),
                               Text(
-                                'Statut',
+                                texts.t('invoice.status'),
                                 style: textTheme.labelMedium?.copyWith(
                                   color: colors.textSecondary,
                                 ),
@@ -274,28 +280,28 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                 runSpacing: 8,
                                 children: [
                                   _StatusChip(
-                                    label: 'En attente',
+                                    label: texts.t('invoice.status.PENDING'),
                                     value: 'PENDING',
                                     selected: _status == 'PENDING',
                                     onTap: () =>
                                         setState(() => _status = 'PENDING'),
                                   ),
                                   _StatusChip(
-                                    label: 'Payée',
+                                    label: texts.t('invoice.status.PAID'),
                                     value: 'PAID',
                                     selected: _status == 'PAID',
                                     onTap: () =>
                                         setState(() => _status = 'PAID'),
                                   ),
                                   _StatusChip(
-                                    label: 'En retard',
+                                    label: texts.t('invoice.status.OVERDUE'),
                                     value: 'OVERDUE',
                                     selected: _status == 'OVERDUE',
                                     onTap: () =>
                                         setState(() => _status = 'OVERDUE'),
                                   ),
                                   _StatusChip(
-                                    label: 'Annulée',
+                                    label: texts.t('invoice.status.CANCELLED'),
                                     value: 'CANCELLED',
                                     selected: _status == 'CANCELLED',
                                     onTap: () =>
@@ -311,7 +317,7 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const EyEyebrow(label: 'Dates'),
+                              EyEyebrow(label: texts.t('invoice.issueDate')),
                               const SizedBox(height: 16),
                               InkWell(
                                 onTap: () => _selectDate(context, true),
@@ -337,7 +343,7 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Date d\'émission',
+                                              texts.t('invoice.issueDate'),
                                               style: textTheme.labelSmall
                                                   ?.copyWith(
                                                     color: colors.textSecondary,
@@ -382,7 +388,9 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Date d\'échéance (optionnel)',
+                                              texts.t(
+                                                'invoice.dueDateOptional',
+                                              ),
                                               style: textTheme.labelSmall
                                                   ?.copyWith(
                                                     color: colors.textSecondary,
@@ -394,7 +402,7 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                                                   ? DateFormat(
                                                       'dd/MM/yyyy',
                                                     ).format(_dueDate!)
-                                                  : 'Non définie',
+                                                  : texts.t('invoice.notSet'),
                                               style: textTheme.bodyLarge,
                                             ),
                                           ],
@@ -418,12 +426,14 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const EyEyebrow(label: 'Description (optionnel)'),
+                              EyEyebrow(
+                                label: texts.t('invoice.descriptionOptional'),
+                              ),
                               const SizedBox(height: 16),
                               EyTextField(
-                                label: 'Description',
+                                label: texts.t('invoice.description'),
                                 controller: _descriptionController,
-                                hint: 'Détails supplémentaires...',
+                                hint: texts.t('invoice.descriptionHint'),
                                 maxLines: 4,
                                 prefixIcon: const Icon(Icons.notes_rounded),
                               ),
@@ -433,8 +443,8 @@ class _InvoiceFormScreenState extends State<InvoiceFormScreen> {
                         const SizedBox(height: 24),
                         EyPrimaryButton(
                           label: isEditing
-                              ? 'Mettre à jour'
-                              : 'Créer la facture',
+                              ? texts.t('invoice.update')
+                              : texts.t('invoice.create'),
                           icon: isEditing
                               ? Icons.check_rounded
                               : Icons.add_rounded,

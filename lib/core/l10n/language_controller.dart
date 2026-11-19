@@ -15,6 +15,9 @@ class LanguageController extends ChangeNotifier {
 
   String get languageCode => _locale.languageCode;
 
+  static TextDirection textDirectionFor(String languageCode) =>
+      languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr;
+
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     final stored = prefs.getString(_storageKey);

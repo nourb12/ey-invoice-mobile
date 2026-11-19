@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/l10n/app_texts.dart';
@@ -13,15 +13,14 @@ class ScannedInvoicesPortalScreen extends StatelessWidget {
 
   Future<void> _openPortal(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
+    final errorMessage = AppTexts.of(context).t('portal.openError');
     final ok = await launchUrl(
       _portalUri,
       mode: LaunchMode.externalApplication,
     );
 
     if (!ok) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Impossible d ouvrir le portail web.')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(errorMessage)));
     }
   }
 

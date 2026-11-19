@@ -162,6 +162,7 @@ class ScanDraft {
     required this.missingFieldKeys,
     required this.supplierResolution,
     this.backendTransactionId,
+    this.pendingSubmission = false,
   });
 
   final String id;
@@ -186,6 +187,7 @@ class ScanDraft {
   final List<String> missingFieldKeys;
   final ScanSupplierResolution supplierResolution;
   final String? backendTransactionId;
+  final bool pendingSubmission;
 
   String get title {
     if (supplierResolution.displayName.isNotEmpty) {
@@ -206,6 +208,37 @@ class ScanDraft {
     }
     final suffix = currency.isEmpty ? '' : ' $currency';
     return '$totalAmount$suffix';
+  }
+
+  ScanDraft withResolvedSupplier(ScanSupplierResolution resolution) {
+    if (!resolution.isResolved) return copyWith(supplierResolution: resolution);
+    final values = <String, String>{
+      for (final prefix in ['supplier', 'merchant', 'issuer']) ...{
+        '${prefix}_name': resolution.displayName,
+        '${prefix}_tax_id': resolution.taxId ?? '',
+        '${prefix}_address': resolution.address ?? '',
+      },
+      'supplier_iban': resolution.iban ?? '',
+      'iban': resolution.iban ?? '',
+    };
+    final updated = fields.map((field) {
+      final value = values[field.key];
+      return value == null
+          ? field
+          : field.copyWith(
+              value: value,
+              requiresReview: field.requiredField && value.isEmpty,
+            );
+    }).toList();
+    return copyWith(
+      supplierResolution: resolution,
+      supplierName: resolution.displayName,
+      fields: updated,
+      missingFieldKeys: updated
+          .where((f) => f.requiredField && f.value.isEmpty)
+          .map((f) => f.key)
+          .toList(),
+    );
   }
 
   ScanDraft copyWith({
@@ -231,6 +264,7 @@ class ScanDraft {
     List<String>? missingFieldKeys,
     ScanSupplierResolution? supplierResolution,
     String? backendTransactionId,
+    bool? pendingSubmission,
   }) {
     return ScanDraft(
       id: id ?? this.id,
@@ -255,6 +289,7 @@ class ScanDraft {
       missingFieldKeys: missingFieldKeys ?? this.missingFieldKeys,
       supplierResolution: supplierResolution ?? this.supplierResolution,
       backendTransactionId: backendTransactionId ?? this.backendTransactionId,
+      pendingSubmission: pendingSubmission ?? this.pendingSubmission,
     );
   }
 
@@ -303,6 +338,7 @@ class ScanDraft {
               displayName: json['supplierName']?.toString() ?? '',
             ),
       backendTransactionId: json['backendTransactionId']?.toString(),
+      pendingSubmission: json['pendingSubmission'] == true,
     );
   }
 
@@ -330,6 +366,7 @@ class ScanDraft {
       'missingFieldKeys': missingFieldKeys,
       'supplierResolution': supplierResolution.toJson(),
       'backendTransactionId': backendTransactionId,
+      'pendingSubmission': pendingSubmission,
     };
   }
 }

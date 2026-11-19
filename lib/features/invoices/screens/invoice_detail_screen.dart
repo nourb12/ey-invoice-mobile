@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/l10n/app_texts.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/widgets/ey_background.dart';
 import '../../../core/widgets/ey_components.dart';
@@ -8,10 +9,7 @@ import '../models/invoice.dart';
 import 'invoice_form_screen.dart';
 
 class InvoiceDetailScreen extends StatelessWidget {
-  const InvoiceDetailScreen({
-    super.key,
-    required this.invoice,
-  });
+  const InvoiceDetailScreen({super.key, required this.invoice});
 
   final Invoice invoice;
 
@@ -19,6 +17,8 @@ class InvoiceDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.ey;
     final textTheme = Theme.of(context).textTheme;
+    final texts = AppTexts.of(context);
+    final locale = Localizations.localeOf(context).toLanguageTag();
 
     return Scaffold(
       backgroundColor: colors.pageBg,
@@ -35,7 +35,7 @@ class InvoiceDetailScreen extends StatelessWidget {
                     EyIconAction(
                       icon: Icons.arrow_back_rounded,
                       onTap: () => Navigator.of(context).pop(),
-                      tooltip: 'Retour',
+                      tooltip: texts.t('invoice.back'),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -43,7 +43,7 @@ class InvoiceDetailScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Détails de la facture',
+                            texts.t('invoice.details'),
                             style: textTheme.titleMedium,
                           ),
                           Text(
@@ -62,7 +62,7 @@ class InvoiceDetailScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      tooltip: 'Modifier',
+                      tooltip: texts.t('common.edit'),
                     ),
                   ],
                 ),
@@ -91,20 +91,22 @@ class InvoiceDetailScreen extends StatelessWidget {
                                   ),
                                 ),
                                 EyStatusChip(
-                                  label: invoice.statusLabel,
+                                  label: texts.t(
+                                    'invoice.status.${invoice.status}',
+                                  ),
                                   tone: _getStatusTone(invoice.status),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 18),
                             _DetailRow(
-                              label: 'Client',
+                              label: texts.t('invoice.client'),
                               value: invoice.clientName,
                               icon: Icons.person_outline_rounded,
                             ),
                             const SizedBox(height: 12),
                             _DetailRow(
-                              label: 'Montant',
+                              label: texts.t('invoice.amount'),
                               value: invoice.formattedAmount,
                               icon: Icons.euro_rounded,
                               valueStyle: textTheme.headlineSmall?.copyWith(
@@ -114,17 +116,21 @@ class InvoiceDetailScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 12),
                             _DetailRow(
-                              label: 'Date d\'émission',
-                              value: DateFormat('dd MMMM yyyy', 'fr_FR')
-                                  .format(invoice.issueDate),
+                              label: texts.t('invoice.issueDate'),
+                              value: DateFormat(
+                                'dd MMMM yyyy',
+                                locale,
+                              ).format(invoice.issueDate),
                               icon: Icons.calendar_today_rounded,
                             ),
                             if (invoice.dueDate != null) ...[
                               const SizedBox(height: 12),
                               _DetailRow(
-                                label: 'Date d\'échéance',
-                                value: DateFormat('dd MMMM yyyy', 'fr_FR')
-                                    .format(invoice.dueDate!),
+                                label: texts.t('invoice.dueDate'),
+                                value: DateFormat(
+                                  'dd MMMM yyyy',
+                                  locale,
+                                ).format(invoice.dueDate!),
                                 icon: Icons.event_rounded,
                               ),
                             ],
@@ -134,7 +140,7 @@ class InvoiceDetailScreen extends StatelessWidget {
                               const Divider(),
                               const SizedBox(height: 18),
                               Text(
-                                'Description',
+                                texts.t('invoice.description'),
                                 style: textTheme.titleSmall?.copyWith(
                                   color: colors.textSecondary,
                                 ),
@@ -166,7 +172,7 @@ class InvoiceDetailScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Informations système',
+                                  texts.t('invoice.system'),
                                   style: textTheme.titleSmall?.copyWith(
                                     color: colors.textSecondary,
                                   ),
@@ -175,7 +181,7 @@ class InvoiceDetailScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'ID: ${invoice.id}\nDevise: ${invoice.currency}\nStatut: ${invoice.status}',
+                              'ID: ${invoice.id}\n${texts.t('invoice.currency')}: ${invoice.currency}\n${texts.t('invoice.status')}: ${texts.t('invoice.status.${invoice.status}')}',
                               style: textTheme.bodySmall?.copyWith(
                                 color: colors.textSecondary,
                                 height: 1.7,
@@ -232,11 +238,7 @@ class _DetailRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          color: colors.textSecondary,
-          size: 20,
-        ),
+        Icon(icon, color: colors.textSecondary, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -251,10 +253,9 @@ class _DetailRow extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 value,
-                style: valueStyle ??
-                    textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style:
+                    valueStyle ??
+                    textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),

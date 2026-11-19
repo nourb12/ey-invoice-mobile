@@ -18,7 +18,8 @@ class SupplierMatchBottomSheet extends StatefulWidget {
   final ScanDraft draft;
 
   @override
-  State<SupplierMatchBottomSheet> createState() => _SupplierMatchBottomSheetState();
+  State<SupplierMatchBottomSheet> createState() =>
+      _SupplierMatchBottomSheetState();
 }
 
 class _SupplierMatchBottomSheetState extends State<SupplierMatchBottomSheet> {
@@ -45,38 +46,62 @@ class _SupplierMatchBottomSheetState extends State<SupplierMatchBottomSheet> {
 
   Future<void> _search({bool createIfMissing = false}) async {
     setState(() => _isLoading = true);
-    final updated = await widget.controller.resolveSupplier(
-      _draft,
-      supplierName: _nameController.text.trim(),
-      createIfMissing: createIfMissing,
-    );
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _isLoading = false;
-      _draft = updated;
-    });
-
-    if (_draft.supplierResolution.isResolved) {
-      Navigator.of(context).pop(_draft);
+    try {
+      final changedName =
+          _nameController.text.trim().toLowerCase() !=
+          _draft.supplierResolution.displayName.trim().toLowerCase();
+      final updated = await widget.controller.resolveSupplier(
+        _draft,
+        supplierName: _nameController.text.trim(),
+        supplierTaxId: changedName ? '' : null,
+        supplierAddress: changedName ? '' : null,
+        supplierIban: changedName ? '' : null,
+        createIfMissing: createIfMissing,
+      );
+      if (!mounted) return;
+      if (widget.controller.hasError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              ScanTexts.of(context).controllerError(
+                widget.controller.errorKey,
+                widget.controller.errorStatusCode,
+              ),
+            ),
+          ),
+        );
+        widget.controller.clearError();
+        return;
+      }
+      setState(() => _draft = updated);
+      if (_draft.supplierResolution.isResolved) {
+        Navigator.of(context).pop(_draft);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(ScanTexts.of(context).requestError(null))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _selectCandidate(ScanSupplierCandidate candidate) {
-    final updated = _draft.copyWith(
-      updatedAt: DateTime.now(),
-      supplierName: candidate.name,
-      supplierResolution: _draft.supplierResolution.copyWith(
-        status: ScanSupplierStatus.confirmed,
-        supplierId: candidate.id,
-        displayName: candidate.name,
-        taxId: candidate.taxId,
-        address: candidate.address,
-        iban: candidate.iban,
-        candidates: const <ScanSupplierCandidate>[],
-      ),
-    );
+    final updated = _draft
+        .copyWith(updatedAt: DateTime.now())
+        .withResolvedSupplier(
+          ScanSupplierResolution(
+            status: ScanSupplierStatus.confirmed,
+            supplierId: candidate.id,
+            displayName: candidate.name,
+            taxId: candidate.taxId,
+            address: candidate.address,
+            iban: candidate.iban,
+            candidates: const <ScanSupplierCandidate>[],
+          ),
+        );
     Navigator.of(context).pop(updated);
   }
 
@@ -90,70 +115,86 @@ class _SupplierMatchBottomSheetState extends State<SupplierMatchBottomSheet> {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              texts.t('supplier.sheet.title'),
-              style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              texts.t('supplier.sheet.subtitle'),
-              style: textTheme.bodySmall?.copyWith(
-                color: colors.textSecondary,
-                height: 1.5,
+        padding: EdgeInsets.fromLTRB(
+          16,
+          10,
+          16,
+          24 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                texts.t('supplier.sheet.title'),
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            EyTextField(
-              label: texts.t('supplier.sheet.searchLabel'),
-              controller: _nameController,
-              hint: texts.t('supplier.sheet.searchHint'),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: EyPrimaryButton(
-                    label: texts.t('supplier.sheet.searchAction'),
-                    isLoading: _isLoading,
-                    onPressed: _isLoading ? null : _search,
+              const SizedBox(height: 8),
+              Text(
+                texts.t('supplier.sheet.subtitle'),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colors.textSecondary,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              EyTextField(
+                label: texts.t('supplier.sheet.searchLabel'),
+                controller: _nameController,
+                hint: texts.t('supplier.sheet.searchHint'),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: EyPrimaryButton(
+                      label: texts.t('supplier.sheet.searchAction'),
+                      isLoading: _isLoading,
+                      onPressed: _isLoading ? null : _search,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: EySecondaryButton(
+                      label: texts.t('supplier.sheet.createAction'),
+                      onPressed: _isLoading
+                          ? null
+                          : () => _search(createIfMissing: true),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (_isLoading)
+                Text(
+                  texts.t('supplier.sheet.matching'),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                )
+              else if (resolution.candidates.isEmpty)
+                Text(
+                  resolution.status == ScanSupplierStatus.notFound
+                      ? texts.t('supplier.sheet.noResult')
+                      : texts.supplierStatusNote(resolution.status),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                )
+              else ...[
+                Text(
+                  texts.t('supplier.sheet.candidates'),
+                  style: textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: EySecondaryButton(
-                    label: texts.t('supplier.sheet.createAction'),
-                    onPressed: _isLoading ? null : () => _search(createIfMissing: true),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (_isLoading)
-              Text(
-                texts.t('supplier.sheet.matching'),
-                style: textTheme.bodySmall?.copyWith(color: colors.textSecondary),
-              )
-            else if (resolution.candidates.isEmpty)
-              Text(
-                resolution.status == ScanSupplierStatus.notFound
-                    ? texts.t('supplier.sheet.noResult')
-                    : texts.supplierStatusNote(resolution.status),
-                style: textTheme.bodySmall?.copyWith(color: colors.textSecondary),
-              )
-            else ...[
-              Text(
-                texts.t('supplier.sheet.candidates'),
-                style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 10),
-              Flexible(
-                child: ListView.separated(
+                const SizedBox(height: 10),
+                ListView.separated(
                   shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: resolution.candidates.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
@@ -180,7 +221,9 @@ class _SupplierMatchBottomSheetState extends State<SupplierMatchBottomSheet> {
                               ),
                               EyStatusChip(
                                 label: '${candidate.score}%',
-                                tone: candidate.exact ? EyStatusTone.ok : EyStatusTone.warn,
+                                tone: candidate.exact
+                                    ? EyStatusTone.ok
+                                    : EyStatusTone.warn,
                               ),
                             ],
                           ),
@@ -204,7 +247,7 @@ class _SupplierMatchBottomSheetState extends State<SupplierMatchBottomSheet> {
                           ],
                           const SizedBox(height: 10),
                           Align(
-                            alignment: Alignment.centerLeft,
+                            alignment: AlignmentDirectional.centerStart,
                             child: EySecondaryButton(
                               label: texts.t('supplier.sheet.use'),
                               onPressed: () => _selectCandidate(candidate),
@@ -215,17 +258,17 @@ class _SupplierMatchBottomSheetState extends State<SupplierMatchBottomSheet> {
                     );
                   },
                 ),
+              ],
+              const SizedBox(height: 12),
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(texts.t('supplier.sheet.close')),
+                ),
               ),
             ],
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(texts.t('supplier.sheet.close')),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

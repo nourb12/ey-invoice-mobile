@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/l10n/app_texts.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/widgets/ey_components.dart';
 import '../controllers/invoices_controller.dart';
@@ -37,26 +38,27 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
   }
 
   Future<void> _deleteInvoice(Invoice invoice) async {
+    final texts = AppTexts.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         final colors = context.ey;
         return AlertDialog(
-          title: const Text('Supprimer la facture ?'),
+          title: Text(texts.t('invoice.deleteTitle')),
           content: Text(
-            'La facture "${invoice.invoiceNumber}" sera définitivement supprimée du backend.',
+            texts
+                .t('invoice.deleteBody')
+                .replaceFirst('{number}', invoice.invoiceNumber),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Annuler'),
+              child: Text(texts.t('common.cancel')),
             ),
             FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: colors.error,
-              ),
+              style: FilledButton.styleFrom(backgroundColor: colors.error),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Supprimer'),
+              child: Text(texts.t('common.delete')),
             ),
           ],
         );
@@ -64,14 +66,16 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
     );
 
     if (confirmed == true && mounted) {
-      final success = await context.read<InvoicesController>().deleteInvoice(invoice.id!);
+      final success = await context.read<InvoicesController>().deleteInvoice(
+        invoice.id!,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               success
-                  ? 'Facture supprimée avec succès'
-                  : 'Erreur lors de la suppression',
+                  ? texts.t('invoice.deleted')
+                  : texts.t('invoice.deleteError'),
             ),
           ),
         );
@@ -84,6 +88,7 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
     final colors = context.ey;
     final textTheme = Theme.of(context).textTheme;
     final controller = context.watch<InvoicesController>();
+    final texts = AppTexts.of(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
@@ -97,9 +102,12 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Factures Backend', style: textTheme.headlineMedium),
                     Text(
-                      'Liste complète depuis l\'API',
+                      texts.t('invoice.listTitle'),
+                      style: textTheme.headlineMedium,
+                    ),
+                    Text(
+                      texts.t('invoice.listSubtitle'),
                       style: textTheme.bodySmall,
                     ),
                   ],
@@ -108,7 +116,7 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
               EyIconAction(
                 icon: Icons.refresh_rounded,
                 onTap: controller.isLoading ? null : () => controller.refresh(),
-                tooltip: 'Actualiser',
+                tooltip: texts.t('invoice.refresh'),
               ),
               const SizedBox(width: 8),
               EyIconAction(
@@ -123,7 +131,7 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
                     controller.refresh();
                   }
                 },
-                tooltip: 'Nouvelle facture',
+                tooltip: texts.t('invoice.new'),
               ),
             ],
           ),
@@ -134,7 +142,7 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
             children: [
               Expanded(
                 child: _StatCard(
-                  label: 'Total',
+                  label: texts.t('invoice.total'),
                   value: controller.totalCount.toString(),
                   tone: EyStatusTone.neutral,
                 ),
@@ -142,7 +150,7 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'Payées',
+                  label: texts.t('invoice.paid'),
                   value: controller.paidCount.toString(),
                   tone: EyStatusTone.ok,
                 ),
@@ -150,7 +158,7 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'En attente',
+                  label: texts.t('invoice.pending'),
                   value: controller.pendingCount.toString(),
                   tone: EyStatusTone.warn,
                 ),
@@ -161,9 +169,9 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
 
           // Recherche
           EyTextField(
-            label: 'Rechercher',
+            label: texts.t('invoice.search'),
             controller: _searchController,
-            hint: 'Numéro, client, statut...',
+            hint: texts.t('invoice.searchHint'),
             prefixIcon: const Icon(Icons.search_rounded),
             onChanged: (value) {
               controller.setSearchQuery(value);
@@ -190,7 +198,7 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
                 ),
               ),
             )
-          else if (controller.errorMessage != null)
+          else if (controller.errorKey != null)
             EySurfaceCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,7 +209,7 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Erreur de connexion',
+                          texts.t('invoice.connectionError'),
                           style: textTheme.titleMedium?.copyWith(
                             color: colors.error,
                           ),
@@ -211,14 +219,14 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    controller.errorMessage!,
+                    texts.t(controller.errorKey!),
                     style: textTheme.bodySmall?.copyWith(
                       color: colors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 14),
                   EySecondaryButton(
-                    label: 'Réessayer',
+                    label: texts.t('invoice.retry'),
                     icon: Icons.refresh_rounded,
                     onPressed: () => controller.refresh(),
                   ),
@@ -230,12 +238,14 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const EyEyebrow(label: 'Aucune facture'),
+                  EyEyebrow(label: texts.t('invoice.emptyTitle')),
                   const SizedBox(height: 12),
                   Text(
                     controller.searchQuery.isNotEmpty
-                        ? 'Aucun résultat pour "${controller.searchQuery}"'
-                        : 'Aucune facture trouvée dans le backend.',
+                        ? texts
+                              .t('invoice.emptySearch')
+                              .replaceFirst('{query}', controller.searchQuery)
+                        : texts.t('invoice.empty'),
                     style: textTheme.bodyMedium?.copyWith(
                       color: colors.textSecondary,
                       height: 1.6,
@@ -272,7 +282,9 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
                                 ),
                               ),
                               EyStatusChip(
-                                label: invoice.statusLabel,
+                                label: texts.t(
+                                  'invoice.status.${invoice.status}',
+                                ),
                                 tone: _getStatusTone(invoice.status),
                               ),
                             ],
@@ -296,14 +308,13 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
                             children: [
                               Expanded(
                                 child: EySecondaryButton(
-                                  label: 'Modifier',
+                                  label: texts.t('common.edit'),
                                   icon: Icons.edit_outlined,
                                   onPressed: () async {
                                     await Navigator.of(context).push(
                                       MaterialPageRoute<void>(
-                                        builder: (_) => InvoiceFormScreen(
-                                          invoice: invoice,
-                                        ),
+                                        builder: (_) =>
+                                            InvoiceFormScreen(invoice: invoice),
                                       ),
                                     );
                                     if (mounted) {
@@ -315,7 +326,7 @@ class _InvoicesListScreenState extends State<InvoicesListScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: EySecondaryButton(
-                                  label: 'Supprimer',
+                                  label: texts.t('common.delete'),
                                   icon: Icons.delete_outline_rounded,
                                   onPressed: () => _deleteInvoice(invoice),
                                 ),
@@ -375,9 +386,7 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
-            style: textTheme.headlineSmall?.copyWith(
-              color: colors.textPrimary,
-            ),
+            style: textTheme.headlineSmall?.copyWith(color: colors.textPrimary),
           ),
         ],
       ),

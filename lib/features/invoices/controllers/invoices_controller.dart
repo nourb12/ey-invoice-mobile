@@ -11,12 +11,13 @@ class InvoicesController extends ChangeNotifier {
 
   List<Invoice> _invoices = [];
   bool _isLoading = false;
-  String? _errorMessage;
+  String? _errorKey;
   String _searchQuery = '';
 
   List<Invoice> get invoices => _invoices;
   bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
+  /// AppTexts key of the last error, to translate in the UI.
+  String? get errorKey => _errorKey;
   String get searchQuery => _searchQuery;
 
   int get totalCount => _invoices.length;
@@ -47,14 +48,14 @@ class InvoicesController extends ChangeNotifier {
   }
 
   void clearError() {
-    _errorMessage = null;
+    _errorKey = null;
     notifyListeners();
   }
 
   /// Charger toutes les factures
   Future<void> loadInvoices() async {
     _isLoading = true;
-    _errorMessage = null;
+    _errorKey = null;
     notifyListeners();
 
     try {
@@ -62,7 +63,7 @@ class InvoicesController extends ChangeNotifier {
       // Trier par date décroissante
       _invoices.sort((a, b) => b.issueDate.compareTo(a.issueDate));
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorKey = 'invoice.loadError';
       if (kDebugMode) {
         print('Erreur loadInvoices: $e');
       }
@@ -75,7 +76,7 @@ class InvoicesController extends ChangeNotifier {
   /// Créer une nouvelle facture
   Future<bool> createInvoice(Invoice invoice) async {
     _isLoading = true;
-    _errorMessage = null;
+    _errorKey = null;
     notifyListeners();
 
     try {
@@ -85,7 +86,7 @@ class InvoicesController extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorKey = 'invoice.saveError';
       _isLoading = false;
       notifyListeners();
       if (kDebugMode) {
@@ -98,7 +99,7 @@ class InvoicesController extends ChangeNotifier {
   /// Mettre à jour une facture
   Future<bool> updateInvoice(String id, Invoice invoice) async {
     _isLoading = true;
-    _errorMessage = null;
+    _errorKey = null;
     notifyListeners();
 
     try {
@@ -111,7 +112,7 @@ class InvoicesController extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorKey = 'invoice.saveError';
       _isLoading = false;
       notifyListeners();
       if (kDebugMode) {
@@ -123,7 +124,7 @@ class InvoicesController extends ChangeNotifier {
 
   /// Supprimer une facture
   Future<bool> deleteInvoice(String id) async {
-    _errorMessage = null;
+    _errorKey = null;
 
     try {
       await _apiService.deleteInvoice(id);
@@ -131,7 +132,7 @@ class InvoicesController extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorKey = 'invoice.deleteError';
       notifyListeners();
       if (kDebugMode) {
         print('Erreur deleteInvoice: $e');
@@ -149,13 +150,13 @@ class InvoicesController extends ChangeNotifier {
     }
 
     _isLoading = true;
-    _errorMessage = null;
+    _errorKey = null;
     notifyListeners();
 
     try {
       _invoices = await _apiService.searchInvoices(query);
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorKey = 'invoice.loadError';
       if (kDebugMode) {
         print('Erreur searchInvoices: $e');
       }

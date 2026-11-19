@@ -286,15 +286,15 @@ class EyStatusChip extends StatelessWidget {
         break;
       case EyStatusTone.ok:
         backgroundColor = colors.ok.withValues(alpha: .12);
-        foregroundColor = colors.ok;
+        foregroundColor = colors.okText;
         break;
       case EyStatusTone.warn:
         backgroundColor = colors.warn.withValues(alpha: .12);
-        foregroundColor = colors.warn;
+        foregroundColor = colors.warnText;
         break;
       case EyStatusTone.error:
         backgroundColor = colors.error.withValues(alpha: .12);
-        foregroundColor = colors.error;
+        foregroundColor = colors.errorText;
         break;
       case EyStatusTone.info:
         backgroundColor = colors.info.withValues(alpha: .12);
@@ -313,10 +313,7 @@ class EyStatusChip extends StatelessWidget {
           letterSpacing: .4,
           fontWeight: FontWeight.w600,
         ) ??
-        TextStyle(
-          color: foregroundColor,
-          fontWeight: FontWeight.w600,
-        );
+        TextStyle(color: foregroundColor, fontWeight: FontWeight.w600);
 
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 28, minWidth: 48),
@@ -356,6 +353,8 @@ class EyTextField extends StatelessWidget {
     this.onSubmitted,
     this.inputFormatters,
     this.validator,
+    this.textDirection,
+    this.autofillHints,
   });
 
   final String label;
@@ -374,6 +373,8 @@ class EyTextField extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
   final List<TextInputFormatter>? inputFormatters;
   final FormFieldValidator<String>? validator;
+  final TextDirection? textDirection;
+  final Iterable<String>? autofillHints;
 
   @override
   Widget build(BuildContext context) {
@@ -392,6 +393,8 @@ class EyTextField extends StatelessWidget {
       textInputAction: textInputAction,
       inputFormatters: inputFormatters,
       validator: validator,
+      textDirection: textDirection,
+      autofillHints: autofillHints,
       style: (mono ? textTheme.labelLarge : textTheme.bodyLarge)?.copyWith(
         color: colors.textPrimary,
       ),

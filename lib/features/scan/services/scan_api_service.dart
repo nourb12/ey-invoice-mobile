@@ -153,6 +153,26 @@ class ScanApiService {
   final String? Function() _accessTokenProvider;
   static const Duration _requestTimeout = Duration(seconds: 120);
 
+  Future<Map<String, dynamic>> getExpense(String transactionId) async {
+    if (!RegExp(r'^[a-fA-F0-9-]{36}$').hasMatch(transactionId)) {
+      throw const ScanApiException('Document introuvable.');
+    }
+    for (final uri in ApiConfig.uris('/expenses/$transactionId')) {
+      try {
+        return _decodeMap(
+          await _client.get(uri, headers: _headers()).timeout(_requestTimeout),
+        );
+      } on TimeoutException {
+        continue;
+      } on SocketException {
+        continue;
+      } on http.ClientException {
+        continue;
+      }
+    }
+    throw const ScanApiException('Connexion indisponible. Réessayez.');
+  }
+
   Future<ScanUploadResult> uploadScan({
     required File file,
     required ScanDocumentType documentType,
@@ -307,16 +327,25 @@ class ScanApiService {
       try {
         decoded = jsonDecode(text);
       } on FormatException {
-        throw const ScanApiException('Reponse serveur illisible.');
+        throw ScanApiException(
+          'Reponse serveur illisible.',
+          statusCode: response.statusCode,
+        );
       }
     }
 
     if (decoded is! Map<String, dynamic>) {
-      throw const ScanApiException('Reponse serveur inattendue.');
+      throw ScanApiException(
+        'Reponse serveur inattendue.',
+        statusCode: response.statusCode,
+      );
     }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw ScanApiException(_extractMessage(decoded));
+      throw ScanApiException(
+        _extractMessage(decoded),
+        statusCode: response.statusCode,
+      );
     }
 
     return decoded;
@@ -359,9 +388,10 @@ class ScanApiService {
 }
 
 class ScanApiException implements Exception {
-  const ScanApiException(this.message);
+  const ScanApiException(this.message, {this.statusCode});
 
   final String message;
+  final int? statusCode;
 
   @override
   String toString() => message;

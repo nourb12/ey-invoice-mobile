@@ -11,6 +11,9 @@ import '../../scan/screens/dashboard_screen.dart';
 import '../../scan/screens/scan_history_screen.dart';
 import '../../scan/screens/scan_screen.dart';
 import 'scanned_invoices_portal_screen.dart';
+import '../../assistant/assistant_sheet.dart';
+import '../../notifications/document_alerts_controller.dart';
+import '../../notifications/document_alerts_sheet.dart';
 
 class MobileHomeShell extends StatefulWidget {
   const MobileHomeShell({super.key});
@@ -19,8 +22,39 @@ class MobileHomeShell extends StatefulWidget {
   State<MobileHomeShell> createState() => _MobileHomeShellState();
 }
 
-class _MobileHomeShellState extends State<MobileHomeShell> {
+class _MobileHomeShellState extends State<MobileHomeShell>
+    with WidgetsBindingObserver {
   int _index = 0;
+  final _assistantMessages = <Map<String, dynamic>>[];
+  late final DocumentAlertsController _alerts;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    final sessions = context.read<SessionController>();
+    final user = sessions.session!.utilisateur;
+    _alerts = DocumentAlertsController(
+      account: '${user.entrepriseId}:${user.id}',
+      token: () {
+        final current = sessions.session;
+        return current?.utilisateur.id == user.id &&
+                current?.utilisateur.entrepriseId == user.entrepriseId
+            ? current?.accessToken
+            : null;
+      },
+    )..load();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) =>
+      _alerts.setActive(state == AppLifecycleState.resumed);
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _alerts.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +69,25 @@ class _MobileHomeShellState extends State<MobileHomeShell> {
         onToggleTheme: () {
           themeController.toggle();
         },
-        onLogout: sessionController.logout,
+        onLogout: () async {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              title: Text(texts.t('session.logoutConfirm')),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: Text(texts.t('common.cancel')),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: Text(texts.t('common.logout')),
+                ),
+              ],
+            ),
+          );
+          if (confirmed == true) await sessionController.logout();
+        },
       ),
       const ScanScreen(),
       const ScanHistoryScreen(),
@@ -44,11 +96,45 @@ class _MobileHomeShellState extends State<MobileHomeShell> {
 
     return Scaffold(
       backgroundColor: context.ey.pageBg,
+      floatingActionButton: FloatingActionButton.small(
+        tooltip: texts.t('assistant.title'),
+        onPressed: () => showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          barrierColor: Colors.black26,
+          builder: (_) => MobileAssistant(messages: _assistantMessages),
+        ),
+        child: const Icon(Icons.chat_bubble_outline_rounded),
+      ),
       body: EyBackground(
         safeArea: false,
         child: SafeArea(
           child: Column(
             children: [
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: AnimatedBuilder(
+                  animation: _alerts,
+                  builder: (context, _) => IconButton(
+                    tooltip: texts.t('alerts.title'),
+                    icon: Badge(
+                      isLabelVisible: _alerts.unreadCount > 0,
+                      label: Text('${_alerts.unreadCount}'),
+                      child: const Icon(Icons.notifications_outlined),
+                    ),
+                    onPressed: () {
+                      _alerts.refresh();
+                      showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (_) =>
+                            DocumentAlertsSheet(controller: _alerts),
+                      );
+                    },
+                  ),
+                ),
+              ),
               Expanded(
                 child: IndexedStack(index: _index, children: pages),
               ),

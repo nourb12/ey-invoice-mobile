@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/auth_session.dart';
 import '../models/user_profile.dart';
@@ -28,13 +29,14 @@ class SessionController extends ChangeNotifier {
 
   SessionStatus _status = SessionStatus.booting;
   bool _isBusy = false;
-  String? _errorMessage;
+  String? _errorKey;
   String? _pendingUserId;
   AuthSession? _session;
 
   SessionStatus get status => _status;
   bool get isBusy => _isBusy;
-  String? get errorMessage => _errorMessage;
+  /// AppTexts key of the last error, to translate in the UI.
+  String? get errorKey => _errorKey;
   String? get pendingUserId => _pendingUserId;
   AuthSession? get session => _session;
   UserProfile? get user => _session?.utilisateur;
@@ -44,7 +46,7 @@ class SessionController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final rawSession = await _secureStorage.read(key: _sessionStorageKey);
+      final rawSession = await _readStoredSession();
       if (rawSession == null || rawSession.isEmpty) {
         _status = SessionStatus.unauthenticated;
         notifyListeners();
@@ -69,8 +71,9 @@ class SessionController extends ChangeNotifier {
   }
 
   Future<bool> login({required String email, required String password}) async {
+    if (_isBusy) return false;
     _setBusy(true);
-    _errorMessage = null;
+    _errorKey = null;
     notifyListeners();
 
     try {
@@ -92,12 +95,13 @@ class SessionController extends ChangeNotifier {
       await _persistSession();
       return true;
     } on ApiException catch (error) {
-      _errorMessage = error.message;
+      debugPrint('Login failed: ${error.message}');
+      _errorKey = 'login.failed';
       _status = SessionStatus.unauthenticated;
       return false;
     } catch (error) {
-      _errorMessage =
-          kDebugMode ? 'Erreur inattendue: $error' : 'Une erreur inattendue est survenue.';
+      debugPrint('Login failed: $error');
+      _errorKey = 'login.failed';
       _status = SessionStatus.unauthenticated;
       return false;
     } finally {
@@ -106,14 +110,15 @@ class SessionController extends ChangeNotifier {
   }
 
   Future<bool> verifyTwoFactorCode(String code) async {
+    if (_isBusy) return false;
     if (_pendingUserId == null || _pendingUserId!.isEmpty) {
-      _errorMessage = 'Session 2FA introuvable.';
+      _errorKey = 'otp.sessionMissing';
       notifyListeners();
       return false;
     }
 
     _setBusy(true);
-    _errorMessage = null;
+    _errorKey = null;
     notifyListeners();
 
     try {
@@ -127,10 +132,12 @@ class SessionController extends ChangeNotifier {
       await _persistSession();
       return true;
     } on ApiException catch (error) {
-      _errorMessage = error.message;
+      debugPrint('2FA failed: ${error.message}');
+      _errorKey = 'otp.failed';
       return false;
-    } catch (_) {
-      _errorMessage = 'Validation 2FA impossible.';
+    } catch (error) {
+      debugPrint('2FA failed: $error');
+      _errorKey = 'otp.failed';
       return false;
     } finally {
       _setBusy(false);
@@ -149,10 +156,10 @@ class SessionController extends ChangeNotifier {
       }
     } catch (_) {
     } finally {
-      await _secureStorage.delete(key: _sessionStorageKey);
+      await _deleteStoredSession();
       _session = null;
       _pendingUserId = null;
-      _errorMessage = null;
+      _errorKey = null;
       _status = SessionStatus.unauthenticated;
       _setBusy(false);
       notifyListeners();
@@ -161,29 +168,54 @@ class SessionController extends ChangeNotifier {
 
   void cancelTwoFactor() {
     _pendingUserId = null;
-    _errorMessage = null;
+    _errorKey = null;
     _status = SessionStatus.unauthenticated;
     notifyListeners();
   }
 
   void clearError() {
-    if (_errorMessage == null) {
+    if (_errorKey == null) {
       return;
     }
-    _errorMessage = null;
+    _errorKey = null;
     notifyListeners();
   }
 
   Future<void> _persistSession() async {
     if (_session == null) {
-      await _secureStorage.delete(key: _sessionStorageKey);
+      await _deleteStoredSession();
       return;
     }
 
-    await _secureStorage.write(
-      key: _sessionStorageKey,
-      value: jsonEncode(_session!.toJson()),
-    );
+    await _writeStoredSession(jsonEncode(_session!.toJson()));
+  }
+
+  Future<String?> _readStoredSession() async {
+    if (kIsWeb && kDebugMode) {
+      return (await SharedPreferences.getInstance()).getString(
+        _sessionStorageKey,
+      );
+    }
+    return _secureStorage.read(key: _sessionStorageKey);
+  }
+
+  Future<void> _writeStoredSession(String value) async {
+    if (kIsWeb && kDebugMode) {
+      await (await SharedPreferences.getInstance()).setString(
+        _sessionStorageKey,
+        value,
+      );
+      return;
+    }
+    await _secureStorage.write(key: _sessionStorageKey, value: value);
+  }
+
+  Future<void> _deleteStoredSession() async {
+    if (kIsWeb && kDebugMode) {
+      await (await SharedPreferences.getInstance()).remove(_sessionStorageKey);
+      return;
+    }
+    await _secureStorage.delete(key: _sessionStorageKey);
   }
 
   void _setBusy(bool value) {
